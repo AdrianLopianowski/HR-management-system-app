@@ -24,7 +24,6 @@ export class UsersController {
     return this.usersService.create({
       email: 'jan.kowalski@firma.pl',
       name: 'Jan Kowalski',
-      role: 'ADMIN',
     });
   }
   @Get()

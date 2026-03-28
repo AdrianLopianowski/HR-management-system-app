@@ -13,21 +13,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Workspace {
-  id        Int      @id @default(autoincrement())
-  name      String
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
   createdAt DateTime @default(now())
-  users     User[]   
+  updatedAt DateTime @updatedAt
+
+  workspaces WorkspaceMember[]
 }
 
-model User {
-  id          Int        @id @default(autoincrement())
-  email       String     @unique
-  name        String?
-  role        String     @default("USER") // np. ADMIN, USER
-  createdAt   DateTime   @default(now())
-  
-  // Relacja z Workspace
-  workspaceId Int?
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+model Workspace {
+  id         String   @id @default(uuid())
+  name       String
+  inviteCode String   @unique @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  members    WorkspaceMember[]
+}
+
+model WorkspaceMember {
+  id          String   @id @default(uuid())
+  userId      String
+  workspaceId String
+  role        Role     @default(MEMBER)
+  joinedAt    DateTime @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+}
+
+enum Role {
+  OWNER   
+  ADMIN    
+  MEMBER   
 }
