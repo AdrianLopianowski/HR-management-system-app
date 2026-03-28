@@ -1,0 +1,101 @@
+<div
+  class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans"
+>
+  <div
+    class="max-w-md w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100"
+  >
+    <div class="text-center">
+      <div
+        class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-200 mx-auto cursor-pointer"
+        routerLink="/"
+      >
+        W
+      </div>
+      <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+        Witaj z powrotem
+      </h2>
+      <p class="mt-2 text-sm text-gray-600">
+        Zaloguj się, aby zarządzać swoją firmą
+      </p>
+    </div>
+
+    <form class="mt-8 space-y-6" (submit)="$event.preventDefault()">
+      <div class="space-y-4">
+        <div>
+          <label
+            for="email-address"
+            class="block text-sm font-medium text-gray-700"
+            >Adres e-mail</label
+          >
+          <input
+            id="email-address"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            class="mt-1 appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent sm:text-sm transition-shadow"
+            placeholder="jan@firma.pl"
+          />
+        </div>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700"
+            >Hasło</label
+          >
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            class="mt-1 appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent sm:text-sm transition-shadow"
+            placeholder="••••••••"
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <input
+            id="remember-me"
+            name="remember-me"
+            type="checkbox"
+            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+          />
+          <label
+            for="remember-me"
+            class="ml-2 block text-sm text-gray-900 cursor-pointer"
+          >
+            Zapamiętaj mnie
+          </label>
+        </div>
+        <div class="text-sm">
+          <a
+            href="#"
+            class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
+          >
+            Zapomniałeś hasła?
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-all shadow-md hover:-translate-y-0.5"
+        >
+          Zaloguj się
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-6 text-center text-sm text-gray-600">
+      Nie masz jeszcze konta?
+      <a
+        routerLink="/register"
+        class="font-bold text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer"
+      >
+        Załóż je za darmo
+      </a>
+    </div>
+  </div>
+</div>
