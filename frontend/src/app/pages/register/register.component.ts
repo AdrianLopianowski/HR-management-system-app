@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterLink, Router } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -9,9 +9,10 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 
+import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
+
 function passwordValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value || '';
-
   const hasUppercase = /[A-Z]/.test(value);
   const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(value);
 
@@ -29,6 +30,12 @@ function passwordValidator(control: AbstractControl): ValidationErrors | null {
   styleUrl: './register.component.css',
 })
 export class RegisterComponent {
+  private auth = inject(Auth);
+  private router = inject(Router);
+
+  errorMessage: string | null = null;
+  isLoading: boolean = false;
+
   registerForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -39,10 +46,35 @@ export class RegisterComponent {
     ]),
   });
 
-  onSubmit() {
+  async onSubmit() {
     if (this.registerForm.valid) {
-      console.log('Dane do wysłania na backend:', this.registerForm.value);
-      //NestJS / Supabase
+      this.isLoading = true;
+      this.errorMessage = null;
+
+      const email = this.registerForm.value.email!;
+      const password = this.registerForm.value.password!;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(
+          this.auth,
+          email,
+          password,
+        );
+        console.log('Sukces! Utworzono użytkownika:', userCredential.user);
+
+        this.router.navigate(['/']);
+      } catch (error: any) {
+        console.error('Błąd Firebase:', error);
+
+        if (error.code === 'auth/email-already-in-use') {
+          this.errorMessage = 'Ten adres e-mail jest już zajęty.';
+        } else {
+          this.errorMessage =
+            'Wystąpił błąd podczas rejestracji. Spróbuj ponownie.';
+        }
+      } finally {
+        this.isLoading = false;
+      }
     } else {
       this.registerForm.markAllAsTouched();
     }
