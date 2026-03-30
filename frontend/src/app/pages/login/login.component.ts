@@ -43,7 +43,7 @@ export class LoginComponent {
         );
         console.log('Sukces! Zalogowano użytkownika:', userCredential.user);
 
-        this.router.navigate(['/']);
+        this.router.navigate(['/dashboard']);
       } catch (error: any) {
         console.error('Błąd logowania Firebase:', error);
 
