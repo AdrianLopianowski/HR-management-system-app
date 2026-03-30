@@ -4,6 +4,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
@@ -18,6 +19,7 @@ export const routes: Routes = [
     component: ForgotPasswordComponent,
     canActivate: [guestGuard],
   },
+  { path: 'verify-email', component: VerifyEmailComponent },
 
   // Strefa Zalogowanych
   {

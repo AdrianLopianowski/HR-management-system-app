@@ -7,7 +7,13 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
+import {
+  Auth,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from '@angular/fire/auth';
 
 @Component({
   selector: 'app-login',
@@ -41,12 +47,15 @@ export class LoginComponent {
           email,
           password,
         );
-        console.log('Sukces! Zalogowano użytkownika:', userCredential.user);
 
-        this.router.navigate(['/dashboard']);
+        if (!userCredential.user.emailVerified) {
+          await signOut(this.auth);
+          this.router.navigate(['/verify-email']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       } catch (error: any) {
         console.error('Błąd logowania Firebase:', error);
-
         if (
           error.code === 'auth/invalid-credential' ||
           error.code === 'auth/wrong-password' ||
@@ -62,6 +71,17 @@ export class LoginComponent {
       }
     } else {
       this.loginForm.markAllAsTouched();
+    }
+  }
+
+  async loginWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(this.auth, provider);
+      this.router.navigate(['/dashboard']);
+    } catch (error) {
+      console.error('Błąd logowania Google:', error);
+      this.errorMessage = 'Wystąpił błąd podczas logowania przez Google.';
     }
   }
 }

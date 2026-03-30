@@ -9,7 +9,14 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 
-import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from '@angular/fire/auth';
 
 function passwordValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value || '';
@@ -60,12 +67,14 @@ export class RegisterComponent {
           email,
           password,
         );
-        console.log('Sukces! Utworzono użytkownika:', userCredential.user);
 
-        this.router.navigate(['/']);
+        await sendEmailVerification(userCredential.user);
+
+        await signOut(this.auth);
+
+        this.router.navigate(['/verify-email']);
       } catch (error: any) {
         console.error('Błąd Firebase:', error);
-
         if (error.code === 'auth/email-already-in-use') {
           this.errorMessage = 'Ten adres e-mail jest już zajęty.';
         } else {
@@ -77,6 +86,17 @@ export class RegisterComponent {
       }
     } else {
       this.registerForm.markAllAsTouched();
+    }
+  }
+
+  async loginWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(this.auth, provider);
+      this.router.navigate(['/dashboard']);
+    } catch (error) {
+      console.error('Błąd logowania Google:', error);
+      this.errorMessage = 'Wystąpił błąd podczas łączenia z kontem Google.';
     }
   }
 }
