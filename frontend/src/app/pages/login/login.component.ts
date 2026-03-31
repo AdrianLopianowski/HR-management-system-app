@@ -6,7 +6,6 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-
 import {
   Auth,
   signInWithEmailAndPassword,
@@ -14,6 +13,9 @@ import {
   signInWithPopup,
   signOut,
 } from '@angular/fire/auth';
+
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -24,6 +26,7 @@ import {
 export class LoginComponent {
   private auth = inject(Auth);
   private router = inject(Router);
+  private http = inject(HttpClient);
 
   errorMessage: string | null = null;
   isLoading: boolean = false;
@@ -32,6 +35,20 @@ export class LoginComponent {
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required]),
   });
+
+  private async syncUserWithBackend(user: any) {
+    const token = await user.getIdToken();
+
+    await firstValueFrom(
+      this.http.post(
+        'http://localhost:3000/auth/sync',
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      ),
+    );
+  }
 
   async onSubmit() {
     if (this.loginForm.valid) {
@@ -52,19 +69,18 @@ export class LoginComponent {
           await signOut(this.auth);
           this.router.navigate(['/verify-email']);
         } else {
+          await this.syncUserWithBackend(userCredential.user);
           this.router.navigate(['/dashboard']);
         }
       } catch (error: any) {
-        console.error('Błąd logowania Firebase:', error);
-        if (
-          error.code === 'auth/invalid-credential' ||
-          error.code === 'auth/wrong-password' ||
-          error.code === 'auth/user-not-found'
-        ) {
+        console.error('Prawdziwy błąd logowania:', error);
+
+        if (error.code) {
           this.errorMessage = 'Błędny adres e-mail lub hasło.';
         } else {
+          await signOut(this.auth);
           this.errorMessage =
-            'Wystąpił błąd podczas logowania. Spróbuj ponownie.';
+            'Błąd synchronizacji z serwerem. Sprawdź konsolę (F12).';
         }
       } finally {
         this.isLoading = false;
@@ -77,7 +93,10 @@ export class LoginComponent {
   async loginWithGoogle() {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(this.auth, provider);
+      const userCredential = await signInWithPopup(this.auth, provider);
+
+      await this.syncUserWithBackend(userCredential.user);
+
       this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Błąd logowania Google:', error);

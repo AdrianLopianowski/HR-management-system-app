@@ -2,18 +2,31 @@
   <nav
     class="w-16 bg-gray-900 flex flex-col items-center py-4 gap-4 z-20 shrink-0"
   >
+    @for (workspace of workspaces; track workspace.id) {
+      <div
+        (click)="selectWorkspace(workspace)"
+        class="w-12 h-12 flex items-center justify-center font-bold text-xl cursor-pointer transition-all shadow-lg"
+        [class.bg-indigo-500]="activeWorkspace?.id === workspace.id"
+        [class.text-white]="activeWorkspace?.id === workspace.id"
+        [class.rounded-2xl]="activeWorkspace?.id === workspace.id"
+        [class.shadow-lg]="activeWorkspace?.id === workspace.id"
+        [class.bg-gray-800]="activeWorkspace?.id !== workspace.id"
+        [class.text-gray-400]="activeWorkspace?.id !== workspace.id"
+        [class.rounded-[24px]]="activeWorkspace?.id !== workspace.id"
+        [class.hover:bg-indigo-500]="activeWorkspace?.id !== workspace.id"
+        [class.hover:text-white]="activeWorkspace?.id !== workspace.id"
+        [class.hover:rounded-xl]="activeWorkspace?.id !== workspace.id"
+        title="{{ workspace.name }}"
+      >
+        {{ getInitials(workspace.name) }}
+      </div>
+    }
+
+    <div class="w-8 h-0.5 bg-gray-700 rounded-full my-2"></div>
+
     <div
-      class="w-12 h-12 bg-indigo-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl cursor-pointer hover:rounded-xl transition-all shadow-lg shadow-indigo-500/50"
-    >
-      W
-    </div>
-    <div class="w-8 h-0.5 bg-gray-700 rounded-full"></div>
-    <div
-      class="w-12 h-12 bg-gray-800 rounded-[24px] flex items-center justify-center text-gray-400 font-bold text-xl cursor-pointer hover:bg-indigo-500 hover:text-white hover:rounded-xl transition-all"
-    >
-      A
-    </div>
-    <div
+      (click)="onAddWorkspace()"
+      title="Dodaj nową przestrzeń"
       class="w-12 h-12 bg-gray-800 rounded-[24px] flex items-center justify-center text-gray-400 font-bold text-xl cursor-pointer hover:bg-green-500 hover:text-white hover:rounded-xl transition-all"
     >
       +
@@ -26,7 +39,7 @@
     <div
       class="h-16 flex items-center px-4 border-b border-gray-200 font-bold text-gray-800 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
     >
-      Stafflou S.A.
+      {{ activeWorkspace ? activeWorkspace.name : "Wybierz przestrzeń" }}
       <svg
         class="w-4 h-4 ml-auto text-gray-500"
         fill="none"
@@ -61,12 +74,6 @@
             class="flex items-center px-2 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
           >
             <span class="text-gray-400 mr-2">#</span> Marketing
-          </a>
-          <a
-            href="#"
-            class="flex items-center px-2 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
-          >
-            <span class="text-gray-400 mr-2">#</span> Ogólny
           </a>
         </div>
       </div>
@@ -156,48 +163,68 @@
     </header>
 
     <div class="flex-1 overflow-y-auto p-6 md:p-8">
-      <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-900">
-          Witaj w Zespole IT 👋
-        </h1>
-        <p class="mt-2 text-gray-600">
-          Oto co się dzisiaj dzieje w Twojej przestrzeni roboczej.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div
-          class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-        >
-          <div class="flex justify-between items-start mb-4">
-            <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
-              >Pilne</span
-            >
-            <span class="text-sm text-gray-500">Do jutra</span>
-          </div>
-          <h3 class="text-lg font-bold text-gray-900">
-            Naprawić logowanie w Angularze
-          </h3>
-          <p class="mt-1 text-sm text-gray-500">
-            Szef zgłosił, że użytkownicy nie mogą się zalogować przez Firebase.
-            Sprawdź plik środowiskowy.
+      @if (activeWorkspace) {
+        <div class="mb-8">
+          <h1 class="text-3xl font-extrabold text-gray-900">
+            Witaj w {{ activeWorkspace.name }} 👋
+          </h1>
+          <p class="mt-2 text-gray-600">
+            Oto co się dzisiaj dzieje w Twojej przestrzeni roboczej.
           </p>
-          <div class="mt-4 flex items-center">
-            <div
-              class="w-6 h-6 rounded-full bg-gray-200 border-2 border-white"
-            ></div>
-            <span class="ml-2 text-xs font-medium text-gray-500"
-              >Zlecone przez: Jan K.</span
-            >
-          </div>
         </div>
 
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div
+            class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+          >
+            <div class="flex justify-between items-start mb-4">
+              <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                >Pilne</span
+              >
+              <span class="text-sm text-gray-500">Do jutra</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">
+              Naprawić logowanie w Angularze
+            </h3>
+            <p class="mt-1 text-sm text-gray-500">
+              Szef zgłosił, że użytkownicy nie mogą się zalogować przez
+              Firebase. Sprawdź plik środowiskowy.
+            </p>
+            <div class="mt-4 flex items-center">
+              <div
+                class="w-6 h-6 rounded-full bg-gray-200 border-2 border-white"
+              ></div>
+              <span class="ml-2 text-xs font-medium text-gray-500"
+                >Zlecone przez: Jan K.</span
+              >
+            </div>
+          </div>
+          <div
+            class="bg-white p-6 rounded-2xl border border-dashed border-gray-300 flex flex-col items-center justify-center text-center text-gray-400 hover:text-indigo-500 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all cursor-pointer min-h-[200px]"
+          >
+            <svg
+              class="w-8 h-8 mb-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              ></path>
+            </svg>
+            <span class="font-medium">Utwórz nowe zadanie</span>
+          </div>
+        </div>
+      } @else {
         <div
-          class="bg-white p-6 rounded-2xl border border-dashed border-gray-300 flex flex-col items-center justify-center text-center text-gray-400 hover:text-indigo-500 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all cursor-pointer min-h-[200px]"
+          class="flex flex-col items-center justify-center h-full text-gray-500 text-lg"
         >
           <svg
-            class="w-8 h-8 mb-2"
+            class="w-16 h-16 mb-4 text-gray-300"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -206,12 +233,15 @@
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M12 4v16m8-8H4"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
             ></path>
           </svg>
-          <span class="font-medium">Utwórz nowe zadanie</span>
+          <p>
+            Utwórz nową przestrzeń roboczą (Plusik z lewej strony), aby
+            rozpocząć pracę.
+          </p>
         </div>
-      </div>
+      }
     </div>
   </main>
 </div>

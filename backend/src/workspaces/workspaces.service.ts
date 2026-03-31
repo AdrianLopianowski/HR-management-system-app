@@ -24,8 +24,19 @@ export class WorkspacesService {
     });
   }
 
-  findAll() {
-    return this.prisma.workspace.findMany();
+  findAllForUser(userId: string) {
+    return this.prisma.workspace.findMany({
+      where: {
+        members: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      include: {
+        members: true,
+      },
+    });
   }
 
   findOne(id: string) {
