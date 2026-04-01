@@ -1,233 +1,240 @@
-<form class="mt-8 space-y-5" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+<div
+  class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300"
+>
   <div
-    class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans"
+    class="max-w-md w-full space-y-8 bg-white dark:bg-gray-900 p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 transition-colors duration-300"
   >
-    <div
-      class="max-w-md w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100"
+    <div class="text-center">
+      <div
+        class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/50 mx-auto cursor-pointer"
+        routerLink="/"
+      >
+        W
+      </div>
+      <h2
+        class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white transition-colors duration-300"
+      >
+        Rozpocznij swoją podróż
+      </h2>
+      <p
+        class="mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300"
+      >
+        Stwórz konto i załóż swoją przestrzeń roboczą
+      </p>
+    </div>
+
+    <form
+      class="mt-8 space-y-5"
+      [formGroup]="registerForm"
+      (ngSubmit)="onSubmit()"
     >
-      <div class="text-center">
-        <div
-          class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-200 mx-auto cursor-pointer"
-          routerLink="/"
+      <div>
+        <label
+          for="name"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300"
+          >Imię i nazwisko</label
         >
-          W
-        </div>
-        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-          Rozpocznij swoją podróż
-        </h2>
-        <p class="mt-2 text-sm text-gray-600">
-          Stwórz konto i załóż swoją przestrzeń roboczą
-        </p>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="mt-1 appearance-none relative block w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 sm:text-sm transition-all"
+          [class.border-red-500]="
+            registerForm.get('name')?.invalid &&
+            registerForm.get('name')?.touched
+          "
+          placeholder="Jan Kowalski"
+        />
+        @if (
+          registerForm.get("name")?.invalid && registerForm.get("name")?.touched
+        ) {
+          <p class="mt-1 text-xs text-red-500 font-medium">
+            Imię i nazwisko jest wymagane.
+          </p>
+        }
       </div>
 
-      <form
-        class="mt-8 space-y-5"
-        [formGroup]="registerForm"
-        (ngSubmit)="onSubmit()"
-      >
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700"
-            >Imię i nazwisko</label
-          >
-          <input
-            id="name"
-            type="text"
-            formControlName="name"
-            class="mt-1 appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm transition-shadow"
-            [class.border-red-500]="
-              registerForm.get('name')?.invalid &&
-              registerForm.get('name')?.touched
-            "
-            placeholder="Jan Kowalski"
-          />
+      <div>
+        <label
+          for="email-address"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300"
+          >Adres e-mail</label
+        >
+        <input
+          id="email-address"
+          type="email"
+          formControlName="email"
+          class="mt-1 appearance-none relative block w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 sm:text-sm transition-all"
+          [class.border-red-500]="
+            registerForm.get('email')?.invalid &&
+            registerForm.get('email')?.touched
+          "
+          placeholder="jan@firma.pl"
+        />
+        @if (
+          registerForm.get("email")?.hasError("required") &&
+          registerForm.get("email")?.touched
+        ) {
+          <p class="mt-1 text-xs text-red-500 font-medium">
+            Adres e-mail jest wymagany.
+          </p>
+        }
+        @if (
+          registerForm.get("email")?.hasError("email") &&
+          registerForm.get("email")?.touched
+        ) {
+          <p class="mt-1 text-xs text-red-500 font-medium">
+            Podaj poprawny adres e-mail (np. jan&#64;firma.pl).
+          </p>
+        }
+      </div>
 
-          @if (
-            registerForm.get("name")?.invalid &&
-            registerForm.get("name")?.touched
-          ) {
-            <p class="mt-1 text-xs text-red-500 font-medium">
-              Imię i nazwisko jest wymagane.
-            </p>
-          }
-        </div>
+      <div>
+        <label
+          for="password"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300"
+          >Hasło</label
+        >
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="mt-1 appearance-none relative block w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 sm:text-sm transition-all"
+          [class.border-red-500]="
+            registerForm.get('password')?.invalid &&
+            registerForm.get('password')?.touched
+          "
+          placeholder="Min. 8 znaków, 1 wielka litera, 1 znak specjalny"
+        />
+        @if (
+          registerForm.get("password")?.hasError("required") &&
+          registerForm.get("password")?.touched
+        ) {
+          <p class="mt-1 text-xs text-red-500 font-medium">
+            Hasło jest wymagane.
+          </p>
+        }
+        @if (
+          registerForm.get("password")?.hasError("minlength") &&
+          registerForm.get("password")?.touched
+        ) {
+          <p class="mt-1 text-xs text-red-500 font-medium">
+            Hasło musi mieć co najmniej 8 znaków.
+          </p>
+        }
+        @if (
+          registerForm.get("password")?.hasError("uppercase") &&
+          registerForm.get("password")?.touched
+        ) {
+          <p class="mt-1 text-xs text-red-500 font-medium">
+            Hasło musi zawierać przynajmniej jedną wielką literę.
+          </p>
+        }
+        @if (
+          registerForm.get("password")?.hasError("specialChar") &&
+          registerForm.get("password")?.touched
+        ) {
+          <p class="mt-1 text-xs text-red-500 font-medium">
+            Hasło musi zawierać przynajmniej jeden znak specjalny.
+          </p>
+        }
+      </div>
 
-        <div>
-          <label
-            for="email-address"
-            class="block text-sm font-medium text-gray-700"
-            >Adres e-mail</label
-          >
-          <input
-            id="email-address"
-            type="email"
-            formControlName="email"
-            class="mt-1 appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm transition-shadow"
-            [class.border-red-500]="
-              registerForm.get('email')?.invalid &&
-              registerForm.get('email')?.touched
-            "
-            placeholder="jan&#64;firma.pl"
-          />
-
-          @if (
-            registerForm.get("email")?.hasError("required") &&
-            registerForm.get("email")?.touched
-          ) {
-            <p class="mt-1 text-xs text-red-500 font-medium">
-              Adres e-mail jest wymagany.
-            </p>
-          }
-          @if (
-            registerForm.get("email")?.hasError("email") &&
-            registerForm.get("email")?.touched
-          ) {
-            <p class="mt-1 text-xs text-red-500 font-medium">
-              Podaj poprawny adres e-mail (np. jan&#64;firma.pl).
-            </p>
-          }
-        </div>
-
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700"
-            >Hasło</label
-          >
-          <input
-            id="password"
-            type="password"
-            formControlName="password"
-            class="mt-1 appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm transition-shadow"
-            [class.border-red-500]="
-              registerForm.get('password')?.invalid &&
-              registerForm.get('password')?.touched
-            "
-            placeholder="Min. 8 znaków, 1 wielka litera, 1 znak specjalny"
-          />
-
-          @if (
-            registerForm.get("password")?.hasError("required") &&
-            registerForm.get("password")?.touched
-          ) {
-            <p class="mt-1 text-xs text-red-500 font-medium">
-              Hasło jest wymagane.
-            </p>
-          }
-          @if (
-            registerForm.get("password")?.hasError("minlength") &&
-            registerForm.get("password")?.touched
-          ) {
-            <p class="mt-1 text-xs text-red-500 font-medium">
-              Hasło musi mieć co najmniej 8 znaków.
-            </p>
-          }
-          @if (
-            registerForm.get("password")?.hasError("uppercase") &&
-            registerForm.get("password")?.touched
-          ) {
-            <p class="mt-1 text-xs text-red-500 font-medium">
-              Hasło musi zawierać przynajmniej jedną wielką literę.
-            </p>
-          }
-          @if (
-            registerForm.get("password")?.hasError("specialChar") &&
-            registerForm.get("password")?.touched
-          ) {
-            <p class="mt-1 text-xs text-red-500 font-medium">
-              Hasło musi zawierać przynajmniej jeden znak specjalny.
-            </p>
-          }
-        </div>
-
-        @if (errorMessage) {
-          <div class="rounded-xl bg-red-50 p-4 border border-red-100 mt-2">
-            <div class="flex">
-              <div class="shrink-0">
-                <svg
-                  class="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">
-                  {{ errorMessage }}
-                </h3>
-              </div>
+      @if (errorMessage) {
+        <div
+          class="rounded-xl bg-red-50 dark:bg-red-900/30 p-4 border border-red-100 dark:border-red-800/50 mt-2 transition-colors duration-300"
+        >
+          <div class="flex">
+            <div class="shrink-0">
+              <svg
+                class="h-5 w-5 text-red-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800 dark:text-red-400">
+                {{ errorMessage }}
+              </h3>
             </div>
           </div>
-        }
-
-        <div class="pt-2">
-          <button
-            type="submit"
-            [disabled]="registerForm.invalid || isLoading"
-            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-all shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-          >
-            @if (isLoading) {
-              Zakładanie konta...
-            } @else {
-              Załóż konto
-            }
-          </button>
         </div>
-      </form>
+      }
 
-      <div
-        class="mt-6 text-center text-sm text-gray-600 border-t border-gray-100 pt-6"
-      >
-        Masz już konto?
-        <a
-          routerLink="/login"
-          class="font-bold text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer"
+      <div class="pt-2">
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || isLoading"
+          class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-all shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
         >
-          Zaloguj się
-        </a>
+          @if (isLoading) {
+            Zakładanie konta...
+          } @else {
+            Załóż konto
+          }
+        </button>
       </div>
-      <div class="mt-6">
-        <div class="relative">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-200"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500"
-              >Albo kontynuuj przez</span
-            >
-          </div>
-        </div>
+    </form>
 
-        <div class="mt-6">
-          <button
-            (click)="loginWithGoogle()"
-            type="button"
-            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            Google
-          </button>
+    <div
+      class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-6 transition-colors duration-300"
+    >
+      Masz już konto?
+      <a
+        routerLink="/login"
+        class="font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors cursor-pointer"
+        >Zaloguj się</a
+      >
+    </div>
+
+    <div class="mt-6">
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+          <div
+            class="w-full border-t border-gray-200 dark:border-gray-800 transition-colors duration-300"
+          ></div>
         </div>
+        <div class="relative flex justify-center text-sm">
+          <span
+            class="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 transition-colors duration-300"
+            >Albo kontynuuj przez</span
+          >
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <button
+          (click)="loginWithGoogle()"
+          type="button"
+          class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm bg-white dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4"
+            />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853"
+            />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              fill="#FBBC05"
+            />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335"
+            />
+          </svg>
+          Google
+        </button>
       </div>
     </div>
   </div>
-</form>
+</div>

@@ -1,20 +1,24 @@
 <div
-  class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans"
+  class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300"
 >
   <div
-    class="max-w-md w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100"
+    class="max-w-md w-full space-y-8 bg-white dark:bg-gray-900 p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 transition-colors duration-300"
   >
     <div class="text-center">
       <div
-        class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-200 mx-auto cursor-pointer"
+        class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/50 mx-auto cursor-pointer"
         routerLink="/"
       >
         W
       </div>
-      <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+      <h2
+        class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white transition-colors duration-300"
+      >
         Witaj z powrotem
       </h2>
-      <p class="mt-2 text-sm text-gray-600">
+      <p
+        class="mt-2 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300"
+      >
         Zaloguj się, aby zarządzać swoją firmą
       </p>
     </div>
@@ -28,20 +32,19 @@
         <div>
           <label
             for="email-address"
-            class="block text-sm font-medium text-gray-700"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300"
             >Adres e-mail</label
           >
           <input
             id="email-address"
             type="email"
             formControlName="email"
-            class="mt-1 appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm transition-shadow"
+            class="mt-1 appearance-none relative block w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 sm:text-sm transition-all"
             [class.border-red-500]="
               loginForm.get('email')?.invalid && loginForm.get('email')?.touched
             "
-            placeholder="jan&#64;firma.pl"
+            placeholder="jan@firma.pl"
           />
-
           @if (
             loginForm.get("email")?.hasError("required") &&
             loginForm.get("email")?.touched
@@ -61,21 +64,22 @@
         </div>
 
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700"
+          <label
+            for="password"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300"
             >Hasło</label
           >
           <input
             id="password"
             type="password"
             formControlName="password"
-            class="mt-1 appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm transition-shadow"
+            class="mt-1 appearance-none relative block w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 sm:text-sm transition-all"
             [class.border-red-500]="
               loginForm.get('password')?.invalid &&
               loginForm.get('password')?.touched
             "
             placeholder="••••••••"
           />
-
           @if (
             loginForm.get("password")?.hasError("required") &&
             loginForm.get("password")?.touched
@@ -92,27 +96,27 @@
           <input
             id="remember-me"
             type="checkbox"
-            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded cursor-pointer"
           />
           <label
             for="remember-me"
-            class="ml-2 block text-sm text-gray-900 cursor-pointer"
+            class="ml-2 block text-sm text-gray-900 dark:text-gray-300 cursor-pointer transition-colors duration-300"
+            >Zapamiętaj mnie</label
           >
-            Zapamiętaj mnie
-          </label>
         </div>
         <div class="text-sm">
           <a
             routerLink="/forgot-password"
-            class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer"
+            class="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors cursor-pointer"
+            >Zapomniałeś hasła?</a
           >
-            Zapomniałeś hasła?
-          </a>
         </div>
       </div>
 
       @if (errorMessage) {
-        <div class="rounded-xl bg-red-50 p-4 border border-red-100">
+        <div
+          class="rounded-xl bg-red-50 dark:bg-red-900/30 p-4 border border-red-100 dark:border-red-800/50 transition-colors duration-300"
+        >
           <div class="flex">
             <div class="shrink-0">
               <svg
@@ -128,7 +132,7 @@
               </svg>
             </div>
             <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">
+              <h3 class="text-sm font-medium text-red-800 dark:text-red-400">
                 {{ errorMessage }}
               </h3>
             </div>
@@ -152,23 +156,28 @@
     </form>
 
     <div
-      class="mt-6 text-center text-sm text-gray-600 border-t border-gray-100 pt-6"
+      class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-6 transition-colors duration-300"
     >
       Nie masz jeszcze konta?
       <a
         routerLink="/register"
-        class="font-bold text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer"
+        class="font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors cursor-pointer"
+        >Załóż je za darmo</a
       >
-        Załóż je za darmo
-      </a>
     </div>
+
     <div class="mt-6">
       <div class="relative">
         <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-200"></div>
+          <div
+            class="w-full border-t border-gray-200 dark:border-gray-800 transition-colors duration-300"
+          ></div>
         </div>
         <div class="relative flex justify-center text-sm">
-          <span class="px-2 bg-white text-gray-500">Albo kontynuuj przez</span>
+          <span
+            class="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 transition-colors duration-300"
+            >Albo kontynuuj przez</span
+          >
         </div>
       </div>
 
@@ -176,7 +185,7 @@
         <button
           (click)="loginWithGoogle()"
           type="button"
-          class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl shadow-sm bg-white dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
             <path

@@ -8,6 +8,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
+import { ThemeService } from '../../services/theme.service';
 
 import {
   Auth,
@@ -39,6 +40,7 @@ function passwordValidator(control: AbstractControl): ValidationErrors | null {
 export class RegisterComponent {
   private auth = inject(Auth);
   private router = inject(Router);
+  private themeService = inject(ThemeService);
 
   errorMessage: string | null = null;
   isLoading: boolean = false;

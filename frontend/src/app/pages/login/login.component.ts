@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
+import { ThemeService } from '../../services/theme.service';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -27,6 +28,7 @@ export class LoginComponent {
   private auth = inject(Auth);
   private router = inject(Router);
   private http = inject(HttpClient);
+  private themeService = inject(ThemeService);
 
   errorMessage: string | null = null;
   isLoading: boolean = false;

@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ThemeService } from '../../services/theme.service';
+import { inject } from '@angular/core';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -14,6 +16,8 @@ import {
   styleUrl: './forgot-password.component.css',
 })
 export class ForgotPasswordComponent {
+  public themeService = inject(ThemeService);
+
   forgotPasswordForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
   });
@@ -24,7 +28,6 @@ export class ForgotPasswordComponent {
         'Wysyłam link resetujący na:',
         this.forgotPasswordForm.value.email,
       );
-      // NestJS / Supabase
     } else {
       this.forgotPasswordForm.markAllAsTouched();
     }
