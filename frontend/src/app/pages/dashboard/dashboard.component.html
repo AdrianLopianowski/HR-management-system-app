@@ -8,15 +8,12 @@
       <div
         (click)="selectWorkspace(workspace)"
         class="w-12 h-12 flex items-center justify-center font-bold text-xl cursor-pointer transition-all shadow-lg"
-        [class.bg-indigo-500]="activeWorkspace?.id === workspace.id"
-        [class.text-white]="activeWorkspace?.id === workspace.id"
-        [class.rounded-2xl]="activeWorkspace?.id === workspace.id"
-        [class.bg-gray-800]="activeWorkspace?.id !== workspace.id"
-        [class.text-gray-400]="activeWorkspace?.id !== workspace.id"
-        [class.rounded-[24px]]="activeWorkspace?.id !== workspace.id"
-        [class.hover:bg-indigo-500]="activeWorkspace?.id !== workspace.id"
-        [class.hover:text-white]="activeWorkspace?.id !== workspace.id"
-        [class.hover:rounded-xl]="activeWorkspace?.id !== workspace.id"
+        [ngClass]="{
+          'bg-indigo-500 text-white rounded-2xl':
+            activeWorkspace?.id === workspace.id,
+          'bg-gray-800 text-gray-400 rounded-[24px] hover:bg-indigo-500 hover:text-white hover:rounded-xl':
+            activeWorkspace?.id !== workspace.id,
+        }"
         title="{{ workspace.name }}"
       >
         {{ getInitials(workspace.name) }}
@@ -58,26 +55,54 @@
 
     <div class="flex-1 overflow-y-auto py-4 px-3 space-y-6">
       <div>
-        <h3
-          class="px-2 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2"
-        >
-          Moje Grupy
-        </h3>
+        <div class="flex justify-between items-center px-2 mb-2">
+          <h3
+            class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider"
+          >
+            Kanały
+          </h3>
+          @if (activeWorkspace) {
+            <button
+              (click)="isChannelModalOpen = true"
+              title="Dodaj kanał"
+              class="text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors font-bold text-lg leading-none"
+            >
+              +
+            </button>
+          }
+        </div>
+
         <div class="space-y-1">
-          <a
-            href="#"
-            class="flex items-center px-2 py-2 text-sm font-medium rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400"
-          >
-            <span class="text-indigo-400 dark:text-indigo-500 mr-2">#</span>
-            Zespół IT
-          </a>
-          <a
-            href="#"
-            class="flex items-center px-2 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-          >
-            <span class="text-gray-400 dark:text-gray-500 mr-2">#</span>
-            Marketing
-          </a>
+          @for (channel of channels; track channel.id) {
+            <a
+              (click)="selectChannel(channel, $event)"
+              class="flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer"
+              [ngClass]="{
+                'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400':
+                  activeChannel?.id === channel.id,
+                'text-gray-600 dark:text-gray-400 hover:bg-gray-100 hover:dark:bg-gray-800':
+                  activeChannel?.id !== channel.id,
+              }"
+            >
+              <span
+                class="mr-2"
+                [ngClass]="{
+                  'text-indigo-400': activeChannel?.id === channel.id,
+                  'text-gray-400 dark:text-gray-500':
+                    activeChannel?.id !== channel.id,
+                }"
+              >
+                {{ channel.type === "INFO" ? "📢" : "#" }}
+              </span>
+              {{ channel.name }}
+            </a>
+          } @empty {
+            @if (activeWorkspace) {
+              <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-500">
+                Brak kanałów. Utwórz pierwszy!
+              </div>
+            }
+          }
         </div>
       </div>
     </div>
@@ -361,6 +386,111 @@
             } @else {
               Stwórz
             }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isChannelModalOpen) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
+    >
+      <div
+        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border dark:border-gray-800"
+      >
+        <div
+          class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center"
+        >
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            Utwórz kanał
+          </h3>
+          <button
+            (click)="isChannelModalOpen = false; newChannelName = ''"
+            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="px-6 py-6 space-y-5 text-left">
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-3"
+              >Typ kanału</label
+            >
+            <div class="flex gap-6">
+              <label class="flex items-center cursor-pointer group">
+                <input
+                  type="radio"
+                  name="channelType"
+                  value="TEXT"
+                  [(ngModel)]="newChannelType"
+                  class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <span
+                  class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                  ># Tekstowy</span
+                >
+              </label>
+              <label class="flex items-center cursor-pointer group">
+                <input
+                  type="radio"
+                  name="channelType"
+                  value="INFO"
+                  [(ngModel)]="newChannelType"
+                  class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <span
+                  class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                  >📢 Informacyjny</span
+                >
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
+              >Nazwa kanału</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="newChannelName"
+              (keyup.enter)="submitNewChannel()"
+              placeholder="np. ogłoszenia"
+              class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-lg focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
+            />
+          </div>
+        </div>
+
+        <div
+          class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between"
+        >
+          <button
+            (click)="isChannelModalOpen = false; newChannelName = ''"
+            class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          >
+            Wróć
+          </button>
+          <button
+            (click)="submitNewChannel()"
+            [disabled]="!newChannelName.trim() || !activeWorkspace"
+            class="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            Utwórz kanał
           </button>
         </div>
       </div>

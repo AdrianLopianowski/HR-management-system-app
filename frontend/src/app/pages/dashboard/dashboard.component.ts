@@ -19,11 +19,17 @@ export class DashboardComponent implements OnInit {
   public themeService = inject(ThemeService);
   workspaces: any[] = [];
   activeWorkspace: any = null;
+  activeChannel: any = null;
   isLoadingWorkspaces = true;
 
   isCreateModalOpen = false;
   newWorkspaceName = '';
   isCreating = false;
+
+  channels: any[] = [];
+  isChannelModalOpen = false;
+  newChannelName = '';
+  newChannelType: 'TEXT' | 'INFO' = 'TEXT';
 
   async ngOnInit() {
     await this.loadWorkspaces();
@@ -37,6 +43,7 @@ export class DashboardComponent implements OnInit {
 
       if (this.workspaces.length > 0 && !this.activeWorkspace) {
         this.activeWorkspace = this.workspaces[0];
+        await this.loadChannels(this.activeWorkspace.id);
       }
     } catch (error) {
       console.error('Błąd pobierania przestrzeni:', error);
@@ -44,7 +51,10 @@ export class DashboardComponent implements OnInit {
       this.isLoadingWorkspaces = false;
     }
   }
-
+  selectChannel(channel: any, event: Event) {
+    event.preventDefault();
+    this.activeChannel = channel;
+  }
   openCreateModal() {
     this.newWorkspaceName = '';
     this.isCreateModalOpen = true;
@@ -72,8 +82,34 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  selectWorkspace(workspace: any) {
+  async selectWorkspace(workspace: any) {
     this.activeWorkspace = workspace;
+    this.activeChannel = null;
+    await this.loadChannels(workspace.id);
+  }
+
+  async loadChannels(workspaceId: string) {
+    try {
+      const data: any = await this.workspaceService.getChannels(workspaceId);
+      this.channels = data;
+    } catch (e: any) {
+      console.error('Błąd pobierania kanałów', e);
+    }
+  }
+  async submitNewChannel() {
+    if (!this.newChannelName || !this.activeWorkspace) return;
+    try {
+      await this.workspaceService.createChannel(
+        this.activeWorkspace.id,
+        this.newChannelName,
+        this.newChannelType,
+      );
+      await this.loadChannels(this.activeWorkspace.id);
+      this.isChannelModalOpen = false;
+      this.newChannelName = '';
+    } catch (e: any) {
+      alert('Tylko właściciel może tworzyć kanały!');
+    }
   }
 
   async logout() {

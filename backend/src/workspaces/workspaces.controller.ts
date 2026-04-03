@@ -23,6 +23,10 @@ export class WorkspacesController {
   create(@Req() req: any, @Body() createWorkspaceDto: CreateWorkspaceDto) {
     createWorkspaceDto.userId = req.user.uid;
 
+    console.log('--- 1. TWORZENIE NOWEJ PRZESTRZENI ---');
+    console.log('Twórca (Firebase UID):', req.user.uid);
+    console.log('Dane przestrzeni:', createWorkspaceDto);
+
     return this.workspacesService.create(createWorkspaceDto);
   }
 
@@ -56,5 +60,30 @@ export class WorkspacesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.workspacesService.remove(id);
+  }
+
+  @Get(':id/channels')
+  findAllChannels(@Param('id') id: string) {
+    return this.workspacesService.getChannels(id);
+  }
+
+  @Post(':id/channels')
+  createChannel(
+    @Param('id') id: string,
+    @Body() body: { name: string; type: 'TEXT' | 'INFO' },
+    @Req() req: any,
+  ) {
+    console.log('--- 2. TWORZENIE KANAŁU ---');
+    console.log('ID Przestrzeni roboczej:', id);
+    console.log('Nazwa kanału:', body.name);
+    console.log('Typ kanału:', body.type);
+    console.log('ID użytkownika (Firebase UID):', req.user.uid);
+
+    return this.workspacesService.createChannel(
+      id,
+      body.name,
+      body.type,
+      req.user.uid,
+    );
   }
 }

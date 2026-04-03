@@ -58,4 +58,35 @@ export class WorkspacesService {
       where: { id },
     });
   }
+  async getChannels(workspaceId: string) {
+    return this.prisma.channel.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async createChannel(
+    workspaceId: string,
+    name: string,
+    type: 'TEXT' | 'INFO',
+    userId: string,
+  ) {
+    const member = await this.prisma.workspaceMember.findFirst({
+      where: {
+        workspaceId,
+        userId,
+        role: { in: ['OWNER', 'ADMIN'] },
+      },
+    });
+
+    if (!member) throw new Error('Brak uprawnień do tworzenia kanałów');
+
+    return this.prisma.channel.create({
+      data: {
+        name,
+        type,
+        workspaceId,
+      },
+    });
+  }
 }

@@ -10,7 +10,21 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
+}
+
+enum ChannelType {
+  TEXT
+  INFO
+}
+
+model Channel {
+  id          String      @id @default(uuid())
+  name        String
+  type        ChannelType @default(TEXT)
+  workspaceId String
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
 }
 
 model User {
@@ -31,6 +45,7 @@ model Workspace {
   updatedAt  DateTime @updatedAt
 
   members    WorkspaceMember[]
+  channels   Channel[]
 }
 
 model WorkspaceMember {

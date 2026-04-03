@@ -28,4 +28,22 @@ export class WorkspaceService {
     const headers = await this.getHeaders();
     return firstValueFrom(this.http.get(this.apiUrl, { headers }));
   }
+
+  async getChannels(workspaceId: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.get(`${this.apiUrl}/${workspaceId}/channels`, { headers }),
+    );
+  }
+
+  async createChannel(workspaceId: string, name: string, type: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.post(
+        `${this.apiUrl}/${workspaceId}/channels`,
+        { name, type },
+        { headers },
+      ),
+    );
+  }
 }
