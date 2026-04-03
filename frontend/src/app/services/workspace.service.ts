@@ -66,4 +66,32 @@ export class WorkspaceService {
       ),
     );
   }
+  async getMyInvitations() {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.get(`http://localhost:3000/invitations/my`, { headers }),
+    );
+  }
+
+  async acceptInvitation(id: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.post(
+        `http://localhost:3000/invitations/${id}/accept`,
+        {},
+        { headers },
+      ),
+    );
+  }
+
+  async inviteUser(workspaceId: string, email: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.post(
+        `http://localhost:3000/invitations/invite/${workspaceId}`,
+        { email },
+        { headers },
+      ),
+    );
+  }
 }

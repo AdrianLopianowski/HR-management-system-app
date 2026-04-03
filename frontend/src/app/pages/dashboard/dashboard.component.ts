@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Auth, signOut } from '@angular/fire/auth';
+import { Auth, signOut, onAuthStateChanged } from '@angular/fire/auth';
 import { WorkspaceService } from '../../services/workspace.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -34,8 +34,19 @@ export class DashboardComponent implements OnInit {
   messages: any[] = [];
   newMessageContent = '';
 
-  async ngOnInit() {
-    await this.loadWorkspaces();
+  invitations: any[] = [];
+  isNotificationOpen = false;
+  isInviteModalOpen = false;
+  inviteEmail = '';
+  isInviting = false;
+
+  ngOnInit() {
+    onAuthStateChanged(this.auth, async (user) => {
+      if (user) {
+        await this.loadWorkspaces();
+        await this.loadInvitations();
+      }
+    });
   }
 
   async loadWorkspaces() {
@@ -153,6 +164,50 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  async loadInvitations() {
+    try {
+      const data: any = await this.workspaceService.getMyInvitations();
+      this.invitations = data || [];
+      console.log('Pobrane zaproszenia z serwera:', this.invitations);
+    } catch (error) {
+      console.error('Błąd pobierania zaproszeń:', error);
+    }
+  }
+  openInviteModal() {
+    this.inviteEmail = '';
+    this.isInviteModalOpen = true;
+  }
+
+  closeInviteModal() {
+    this.isInviteModalOpen = false;
+    this.inviteEmail = '';
+  }
+
+  async submitInvite() {
+    if (!this.inviteEmail.trim() || !this.activeWorkspace) return;
+
+    this.isInviting = true;
+    try {
+      await this.workspaceService.inviteUser(
+        this.activeWorkspace.id,
+        this.inviteEmail.trim(),
+      );
+      alert(`Wysłano zaproszenie do: ${this.inviteEmail}`);
+      this.closeInviteModal();
+    } catch (e) {
+      console.error('Błąd wysyłania zaproszenia:', e);
+      alert('Nie udało się wysłać zaproszenia. Sprawdź konsolę.');
+    } finally {
+      this.isInviting = false;
+    }
+  }
+
+  async acceptInv(id: string) {
+    await this.workspaceService.acceptInvitation(id);
+    await this.loadWorkspaces();
+    await this.loadInvitations();
+    this.isNotificationOpen = false;
+  }
   async logout() {
     await signOut(this.auth);
     this.router.navigate(['/login']);
