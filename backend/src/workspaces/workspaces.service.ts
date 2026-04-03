@@ -89,4 +89,43 @@ export class WorkspacesService {
       },
     });
   }
+  async getMessages(channelId: string) {
+    return this.prisma.message.findMany({
+      where: { channelId },
+      include: { user: true },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async sendMessage(
+    workspaceId: string,
+    channelId: string,
+    userId: string,
+    content: string,
+  ) {
+    const member = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId },
+    });
+
+    if (!member) throw new Error('Brak dostępu do tej przestrzeni');
+
+    const channel = await this.prisma.channel.findUnique({
+      where: { id: channelId },
+    });
+
+    if (channel?.type === 'INFO' && member.role === 'MEMBER') {
+      throw new Error(
+        'Tylko Właściciel lub Admin może pisać na kanale informacyjnym.',
+      );
+    }
+
+    return this.prisma.message.create({
+      data: {
+        content,
+        channelId,
+        userId,
+      },
+      include: { user: true },
+    });
+  }
 }

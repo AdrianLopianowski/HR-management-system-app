@@ -46,4 +46,24 @@ export class WorkspaceService {
       ),
     );
   }
+  async getMessages(workspaceId: string, channelId: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.get(
+        `${this.apiUrl}/${workspaceId}/channels/${channelId}/messages`,
+        { headers },
+      ),
+    );
+  }
+
+  async sendMessage(workspaceId: string, channelId: string, content: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.post(
+        `${this.apiUrl}/${workspaceId}/channels/${channelId}/messages`,
+        { content },
+        { headers },
+      ),
+    );
+  }
 }

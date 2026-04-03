@@ -31,6 +31,9 @@ export class DashboardComponent implements OnInit {
   newChannelName = '';
   newChannelType: 'TEXT' | 'INFO' = 'TEXT';
 
+  messages: any[] = [];
+  newMessageContent = '';
+
   async ngOnInit() {
     await this.loadWorkspaces();
   }
@@ -51,9 +54,41 @@ export class DashboardComponent implements OnInit {
       this.isLoadingWorkspaces = false;
     }
   }
-  selectChannel(channel: any, event: Event) {
+  async loadMessages() {
+    if (!this.activeWorkspace || !this.activeChannel) return;
+    try {
+      this.messages = (await this.workspaceService.getMessages(
+        this.activeWorkspace.id,
+        this.activeChannel.id,
+      )) as any[];
+    } catch (e) {
+      console.error('Błąd pobierania wiadomości', e);
+    }
+  }
+  async sendMessage() {
+    if (
+      !this.newMessageContent.trim() ||
+      !this.activeWorkspace ||
+      !this.activeChannel
+    )
+      return;
+    try {
+      await this.workspaceService.sendMessage(
+        this.activeWorkspace.id,
+        this.activeChannel.id,
+        this.newMessageContent,
+      );
+      this.newMessageContent = '';
+      await this.loadMessages();
+    } catch (e) {
+      console.error('Błąd wysyłania', e);
+      alert('Nie udało się wysłać wiadomości. Brak uprawnień?');
+    }
+  }
+  async selectChannel(channel: any, event: Event) {
     event.preventDefault();
     this.activeChannel = channel;
+    await this.loadMessages();
   }
   openCreateModal() {
     this.newWorkspaceName = '';
@@ -81,7 +116,13 @@ export class DashboardComponent implements OnInit {
       this.isCreating = false;
     }
   }
-
+  get currentUserRole(): string {
+    if (!this.activeWorkspace || !this.auth.currentUser) return 'MEMBER';
+    const member = this.activeWorkspace.members.find(
+      (m: any) => m.userId === this.auth.currentUser?.uid,
+    );
+    return member ? member.role : 'MEMBER';
+  }
   async selectWorkspace(workspace: any) {
     this.activeWorkspace = workspace;
     this.activeChannel = null;

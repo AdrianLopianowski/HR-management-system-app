@@ -25,6 +25,7 @@ model Channel {
   workspaceId String
   workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdAt   DateTime    @default(now())
+  messages  Message[]
 }
 
 model User {
@@ -35,6 +36,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   workspaces WorkspaceMember[]
+
+  messages  Message[]
 }
 
 model Workspace {
@@ -65,4 +68,15 @@ enum Role {
   OWNER   
   ADMIN    
   MEMBER   
+}
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  channelId String
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

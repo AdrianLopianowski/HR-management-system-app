@@ -86,4 +86,23 @@ export class WorkspacesController {
       req.user.uid,
     );
   }
+  @Get(':id/channels/:channelId/messages')
+  getMessages(@Param('channelId') channelId: string) {
+    return this.workspacesService.getMessages(channelId);
+  }
+
+  @Post(':id/channels/:channelId/messages')
+  sendMessage(
+    @Param('id') workspaceId: string,
+    @Param('channelId') channelId: string,
+    @Body('content') content: string,
+    @Req() req: any,
+  ) {
+    return this.workspacesService.sendMessage(
+      workspaceId,
+      channelId,
+      req.user.uid,
+      content,
+    );
+  }
 }
