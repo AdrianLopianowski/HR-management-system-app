@@ -58,6 +58,7 @@ export class WorkspacesService {
       where: { id },
     });
   }
+
   async getChannels(workspaceId: string) {
     return this.prisma.channel.findMany({
       where: { workspaceId },
@@ -89,12 +90,26 @@ export class WorkspacesService {
       },
     });
   }
+
   async getMessages(channelId: string) {
-    return this.prisma.message.findMany({
+    const messages = await this.prisma.message.findMany({
       where: { channelId },
-      include: { user: true },
       orderBy: { createdAt: 'asc' },
+      include: {
+        user: true,
+      },
     });
+
+    return messages.map((msg: any) => ({
+      ...msg,
+      user: {
+        ...msg.user,
+        name:
+          msg.user?.firstName && msg.user?.lastName
+            ? `${msg.user.firstName} ${msg.user.lastName}`
+            : msg.user?.name || msg.user?.email || 'Nieznany',
+      },
+    }));
   }
 
   async sendMessage(
@@ -118,14 +133,26 @@ export class WorkspacesService {
         'Tylko Właściciel lub Admin może pisać na kanale informacyjnym.',
       );
     }
-
-    return this.prisma.message.create({
+    const newMessage: any = await this.prisma.message.create({
       data: {
         content,
         channelId,
         userId,
       },
-      include: { user: true },
+      include: {
+        user: true,
+      },
     });
+
+    return {
+      ...newMessage,
+      user: {
+        ...newMessage.user,
+        name:
+          newMessage.user?.firstName && newMessage.user?.lastName
+            ? `${newMessage.user.firstName} ${newMessage.user.lastName}`
+            : newMessage.user?.name || newMessage.user?.email || 'Nieznany',
+      },
+    };
   }
 }

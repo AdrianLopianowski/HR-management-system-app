@@ -35,6 +35,23 @@ export class WorkspaceService {
       this.http.get(`${this.apiUrl}/${workspaceId}/channels`, { headers }),
     );
   }
+  async getMyProfile() {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.get(`http://localhost:3000/users/me`, { headers }),
+    );
+  }
+
+  async updateMyProfile(data: {
+    firstName: string;
+    lastName: string;
+    location: string;
+  }) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.patch(`http://localhost:3000/users/me`, data, { headers }),
+    );
+  }
 
   async createChannel(workspaceId: string, name: string, type: string) {
     const headers = await this.getHeaders();

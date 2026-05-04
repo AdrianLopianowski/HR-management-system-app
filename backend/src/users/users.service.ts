@@ -8,6 +8,24 @@ import { Prisma } from '@prisma/client';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
+  async getOrCreateProfile(uid: string, email: string) {
+    return this.prisma.user.upsert({
+      where: { id: uid },
+      update: {},
+      create: { id: uid, email: email },
+    });
+  }
+
+  async updateProfile(
+    uid: string,
+    data: { firstName: string; lastName: string; location: string },
+  ) {
+    return this.prisma.user.update({
+      where: { id: uid },
+      data,
+    });
+  }
+
   create(data: Prisma.UserCreateInput) {
     return this.prisma.user.create({ data });
   }
@@ -16,15 +34,15 @@ export class UsersService {
     return this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(id: string) {
+    return this.prisma.user.findUnique({ where: { id } });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: string, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  remove(id: string) {
+    return this.prisma.user.delete({ where: { id } });
   }
 }

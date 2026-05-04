@@ -1,407 +1,259 @@
-<div
-  class="h-screen w-full flex bg-gray-50 dark:bg-gray-950 font-sans overflow-hidden transition-colors duration-300"
->
-  <nav
-    class="w-16 bg-gray-900 dark:bg-black flex flex-col items-center py-4 gap-4 z-20 shrink-0 border-r border-transparent dark:border-gray-800 transition-colors"
+@if (showOnboarding) {
+  <!-- EKRAN POWITALNY (ONBOARDING) -->
+  <div
+    class="min-h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-950 font-sans p-4"
   >
-    @for (workspace of workspaces; track workspace.id) {
+    <div
+      class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-8 max-w-lg w-full border border-gray-100 dark:border-gray-800 text-center"
+    >
       <div
-        (click)="selectWorkspace(workspace)"
-        class="w-12 h-12 flex items-center justify-center font-bold text-xl cursor-pointer transition-all shadow-lg"
-        [ngClass]="{
-          'bg-indigo-500 text-white rounded-2xl':
-            activeWorkspace?.id === workspace.id,
-          'bg-gray-800 text-gray-400 rounded-[24px] hover:bg-indigo-500 hover:text-white hover:rounded-xl':
-            activeWorkspace?.id !== workspace.id,
-        }"
-        title="{{ workspace.name }}"
+        class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center text-indigo-500 mx-auto mb-6"
       >
-        {{ getInitials(workspace.name) }}
-      </div>
-    }
-
-    <div class="w-8 h-0.5 bg-gray-700 dark:bg-gray-800 rounded-full my-2"></div>
-
-    <div
-      (click)="openCreateModal()"
-      title="Dodaj nową przestrzeń"
-      class="w-12 h-12 bg-gray-800 dark:bg-gray-900 rounded-[24px] flex items-center justify-center text-gray-400 font-bold text-xl cursor-pointer hover:bg-green-500 hover:text-white hover:rounded-xl transition-all"
-    >
-      +
-    </div>
-  </nav>
-
-  <aside
-    class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col z-10 shrink-0 transition-colors"
-  >
-    <div
-      class="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800 font-bold text-gray-800 dark:text-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-    >
-      {{ activeWorkspace ? activeWorkspace.name : "Wybierz przestrzeń" }}
-      <svg
-        class="w-4 h-4 ml-auto text-gray-500 dark:text-gray-400"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 9l-7 7-7-7"
-        ></path>
-      </svg>
-    </div>
-
-    @if (activeWorkspace) {
-      <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-        <button
-          (click)="openInviteModal()"
-          class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-sm font-bold rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+        <svg
+          class="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <svg
-            class="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-            ></path>
-          </svg>
-          Zaproś ludzi
-        </button>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
       </div>
-    }
 
-    <div class="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-      <div>
-        <div class="flex justify-between items-center px-2 mb-2">
-          <h3
-            class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider"
-          >
-            Kanały
-          </h3>
-          @if (activeWorkspace) {
-            <button
-              (click)="isChannelModalOpen = true"
-              title="Dodaj kanał"
-              class="text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors font-bold text-lg leading-none"
+      <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">
+        Witaj w zespole! 👋
+      </h2>
+      <p class="text-gray-500 dark:text-gray-400 mb-8">
+        Zanim zaczniesz korzystać z platformy, opowiedz nam krótko o sobie.
+        Dzięki temu inni łatwiej Cię rozpoznają.
+      </p>
+
+      <form (ngSubmit)="submitOnboarding()" class="space-y-5 text-left">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
+              >Imię *</label
             >
-              +
-            </button>
-          }
+            <input
+              type="text"
+              [(ngModel)]="onboardingData.firstName"
+              name="firstName"
+              required
+              placeholder="np. Jan"
+              class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 outline-none transition-all text-gray-800 dark:text-white font-medium"
+            />
+          </div>
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
+              >Nazwisko *</label
+            >
+            <input
+              type="text"
+              [(ngModel)]="onboardingData.lastName"
+              name="lastName"
+              required
+              placeholder="np. Kowalski"
+              class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 outline-none transition-all text-gray-800 dark:text-white font-medium"
+            />
+          </div>
         </div>
 
-        <div class="space-y-1">
-          @for (channel of channels; track channel.id) {
-            <a
-              (click)="selectChannel(channel, $event)"
-              class="flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer"
-              [ngClass]="{
-                'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400':
-                  activeChannel?.id === channel.id,
-                'text-gray-600 dark:text-gray-400 hover:bg-gray-100 hover:dark:bg-gray-800':
-                  activeChannel?.id !== channel.id,
-              }"
+        <div>
+          <label
+            class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
+            >Miejscowość (opcjonalnie)</label
+          >
+          <input
+            type="text"
+            [(ngModel)]="onboardingData.location"
+            name="location"
+            placeholder="np. Warszawa"
+            class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 outline-none transition-all text-gray-800 dark:text-white font-medium"
+          />
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="!onboardingData.firstName || !onboardingData.lastName"
+          class="w-full mt-6 px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white text-base font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-50 flex justify-center"
+        >
+          Zapisz profil i wejdź do aplikacji
+        </button>
+      </form>
+    </div>
+  </div>
+} @else {
+  <!-- EKRAN aplikacji  -->
+  <div
+    class="h-screen w-full flex bg-gray-50 dark:bg-gray-950 font-sans overflow-hidden transition-colors duration-300"
+  >
+    <nav
+      class="w-16 bg-gray-900 dark:bg-black flex flex-col items-center py-4 gap-4 z-20 shrink-0 border-r border-transparent dark:border-gray-800 transition-colors"
+    >
+      @for (workspace of workspaces; track workspace.id) {
+        <div
+          (click)="selectWorkspace(workspace)"
+          class="w-12 h-12 flex items-center justify-center font-bold text-xl cursor-pointer transition-all shadow-lg"
+          [ngClass]="{
+            'bg-indigo-500 text-white rounded-2xl':
+              activeWorkspace?.id === workspace.id,
+            'bg-gray-800 text-gray-400 rounded-[24px] hover:bg-indigo-500 hover:text-white hover:rounded-xl':
+              activeWorkspace?.id !== workspace.id,
+          }"
+          title="{{ workspace.name }}"
+        >
+          {{ getInitials(workspace.name) }}
+        </div>
+      }
+
+      <div
+        class="w-8 h-0.5 bg-gray-700 dark:bg-gray-800 rounded-full my-2"
+      ></div>
+
+      <div
+        (click)="openCreateModal()"
+        title="Dodaj nową przestrzeń"
+        class="w-12 h-12 bg-gray-800 dark:bg-gray-900 rounded-[24px] flex items-center justify-center text-gray-400 font-bold text-xl cursor-pointer hover:bg-green-500 hover:text-white hover:rounded-xl transition-all"
+      >
+        +
+      </div>
+    </nav>
+
+    <aside
+      class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col z-10 shrink-0 transition-colors"
+    >
+      <div
+        class="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800 font-bold text-gray-800 dark:text-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      >
+        {{ activeWorkspace ? activeWorkspace.name : "Wybierz przestrzeń" }}
+        <svg
+          class="w-4 h-4 ml-auto text-gray-500 dark:text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          ></path>
+        </svg>
+      </div>
+
+      @if (activeWorkspace) {
+        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+          <button
+            (click)="openInviteModal()"
+            class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-sm font-bold rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <span
-                class="mr-2"
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              ></path>
+            </svg>
+            Zaproś ludzi
+          </button>
+        </div>
+      }
+
+      <div class="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+        <div>
+          <div class="flex justify-between items-center px-2 mb-2">
+            <h3
+              class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider"
+            >
+              Kanały
+            </h3>
+            @if (activeWorkspace) {
+              <button
+                (click)="isChannelModalOpen = true"
+                title="Dodaj kanał"
+                class="text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors font-bold text-lg leading-none"
+              >
+                +
+              </button>
+            }
+          </div>
+
+          <div class="space-y-1">
+            @for (channel of channels; track channel.id) {
+              <a
+                (click)="selectChannel(channel, $event)"
+                class="flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer"
                 [ngClass]="{
-                  'text-indigo-400': activeChannel?.id === channel.id,
-                  'text-gray-400 dark:text-gray-500':
+                  'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400':
+                    activeChannel?.id === channel.id,
+                  'text-gray-600 dark:text-gray-400 hover:bg-gray-100 hover:dark:bg-gray-800':
                     activeChannel?.id !== channel.id,
                 }"
               >
-                {{ channel.type === "INFO" ? "📢" : "#" }}
-              </span>
-              {{ channel.name }}
-            </a>
-          } @empty {
-            @if (activeWorkspace) {
-              <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-500">
-                Brak kanałów. Utwórz pierwszy!
-              </div>
-            }
-          }
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <main
-    class="flex-1 flex flex-col h-full relative bg-gray-50/50 dark:bg-gray-950 transition-colors"
-  >
-    <header
-      class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 transition-colors"
-    >
-      <nav class="flex space-x-1">
-        <a
-          href="#"
-          class="px-4 py-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
-          >Tablica</a
-        >
-        <a
-          href="#"
-          class="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg transition-colors"
-          >Zadania (3)</a
-        >
-      </nav>
-
-      <div class="flex items-center gap-4">
-        <div class="relative">
-          <button
-            (click)="isNotificationOpen = !isNotificationOpen"
-            class="relative text-gray-400 dark:text-gray-500 hover:text-indigo-500 transition-colors flex items-center"
-            title="Powiadomienia"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              ></path>
-            </svg>
-            @if (invitations.length > 0) {
-              <span class="absolute -top-1 -right-1 flex h-3 w-3">
                 <span
-                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
-                ></span>
-                <span
-                  class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white dark:border-gray-900"
-                ></span>
-              </span>
-            }
-          </button>
-
-          @if (isNotificationOpen) {
-            <div
-              class="absolute right-0 mt-3 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden"
-            >
-              <div
-                class="p-4 border-b border-gray-100 dark:border-gray-800 font-bold text-sm text-gray-800 dark:text-gray-200"
-              >
-                Zaproszenia
-              </div>
-              <div class="max-h-80 overflow-y-auto">
-                @for (inv of invitations; track inv.id) {
-                  <div
-                    class="p-4 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <p class="text-sm text-gray-600 dark:text-gray-300">
-                      <span
-                        class="font-bold text-gray-900 dark:text-gray-100"
-                        >{{ inv.invitedBy?.email || "Użytkownik" }}</span
-                      >
-                      zaprasza Cię do dołączenia do
-                      <span class="font-bold text-indigo-500">{{
-                        inv.workspace?.name
-                      }}</span>
-                    </p>
-                    <div class="mt-3 flex gap-2">
-                      <button
-                        (click)="acceptInv(inv.id)"
-                        class="px-3 py-1.5 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition-colors"
-                      >
-                        Zaakceptuj
-                      </button>
-                      <button
-                        (click)="isNotificationOpen = false"
-                        class="px-3 py-1.5 text-gray-500 dark:text-gray-400 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                      >
-                        Później
-                      </button>
-                    </div>
-                  </div>
-                } @empty {
-                  <div
-                    class="p-8 text-center text-gray-500 dark:text-gray-400 text-sm flex flex-col items-center"
-                  >
-                    <svg
-                      class="w-10 h-10 mb-2 opacity-50"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                      ></path>
-                    </svg>
-                    Brak nowych zaproszeń
-                  </div>
-                }
-              </div>
-            </div>
-          }
-        </div>
-
-        <button
-          (click)="themeService.toggleTheme()"
-          title="Zmień motyw"
-          class="text-gray-400 dark:text-gray-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors flex items-center"
-        >
-          @if (themeService.isDarkMode()) {
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-              ></path>
-            </svg>
-          } @else {
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-              ></path>
-            </svg>
-          }
-        </button>
-        <button
-          (click)="logout()"
-          title="Wyloguj się"
-          class="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center"
-        >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            ></path>
-          </svg>
-        </button>
-        <div
-          class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border-2 border-white dark:border-gray-800 shadow-sm"
-        ></div>
-      </div>
-    </header>
-
-    @if (!activeChannel) {
-      <div class="flex-1 overflow-y-auto p-6 md:p-8">
-        @if (activeWorkspace) {
-          <div class="mb-8">
-            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">
-              Witaj w {{ activeWorkspace.name }} 👋
-            </h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-              Oto co się dzisiaj dzieje w Twojej przestrzeni roboczej.
-            </p>
-          </div>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div
-              class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm cursor-pointer"
-            >
-              <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-                Naprawić logowanie w Angularze
-              </h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Szef zgłosił błąd...
-              </p>
-            </div>
-          </div>
-        } @else {
-          <div
-            class="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 text-lg"
-          >
-            <p>Utwórz nową przestrzeń roboczą, aby rozpocząć pracę.</p>
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="flex flex-col flex-1 h-full overflow-hidden">
-        <div
-          class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 shrink-0 bg-white dark:bg-gray-900 transition-colors shadow-sm z-10"
-        >
-          <h2
-            class="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center"
-          >
-            <span class="text-gray-400 dark:text-gray-500 mr-2">{{
-              activeChannel.type === "INFO" ? "📢" : "#"
-            }}</span>
-            {{ activeChannel.name }}
-          </h2>
-        </div>
-
-        <div
-          class="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-gray-950"
-        >
-          @for (msg of messages; track msg.id) {
-            <div class="flex group">
-              <div
-                class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold shrink-0 shadow-sm"
-              >
-                {{ getInitials(msg.user?.email || "U") }}
-              </div>
-              <div class="ml-4 flex-1">
-                <div class="flex items-baseline">
-                  <span
-                    class="font-bold text-gray-900 dark:text-gray-100 mr-2"
-                    >{{
-                      msg.user?.name || msg.user?.email || "Nieznany Użytkownik"
-                    }}</span
-                  >
-                  <span
-                    class="text-xs text-gray-500 dark:text-gray-400 font-medium"
-                    >{{ msg.createdAt | date: "short" }}</span
-                  >
-                </div>
-                <p
-                  class="text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap leading-relaxed"
+                  class="mr-2"
+                  [ngClass]="{
+                    'text-indigo-400': activeChannel?.id === channel.id,
+                    'text-gray-400 dark:text-gray-500':
+                      activeChannel?.id !== channel.id,
+                  }"
                 >
-                  {{ msg.content }}
-                </p>
-              </div>
-            </div>
-          } @empty {
-            <div
-              class="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500"
-            >
-              <span class="text-4xl mb-4">💬</span>
-              <p class="font-medium text-lg">Brak wiadomości. Bądź pierwszy!</p>
-            </div>
-          }
+                  {{ channel.type === "INFO" ? "📢" : "#" }}
+                </span>
+                {{ channel.name }}
+              </a>
+            } @empty {
+              @if (activeWorkspace) {
+                <div class="px-2 py-2 text-xs text-gray-500 dark:text-gray-500">
+                  Brak kanałów. Utwórz pierwszy!
+                </div>
+              }
+            }
+          </div>
         </div>
+      </div>
+    </aside>
 
-        <div
-          class="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shrink-0"
-        >
-          @if (activeChannel.type === "INFO" && currentUserRole === "MEMBER") {
-            <div
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-center text-sm text-gray-500 dark:text-gray-400 font-bold flex items-center justify-center gap-2"
+    <main
+      class="flex-1 flex flex-col h-full relative bg-gray-50/50 dark:bg-gray-950 transition-colors"
+    >
+      <header
+        class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 transition-colors"
+      >
+        <nav class="flex space-x-1">
+          <a
+            href="#"
+            class="px-4 py-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
+            >Tablica</a
+          >
+          <a
+            href="#"
+            class="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-lg transition-colors"
+            >Zadania (3)</a
+          >
+        </nav>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <button
+              (click)="isNotificationOpen = !isNotificationOpen"
+              class="relative text-gray-400 dark:text-gray-500 hover:text-indigo-500 transition-colors flex items-center"
+              title="Powiadomienia"
             >
               <svg
-                class="w-5 h-5"
+                class="w-6 h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -410,30 +262,243 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                 ></path>
               </svg>
-              Tylko właściciel lub administrator może pisać na tym kanale.
+              @if (invitations.length > 0) {
+                <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
+                  ></span>
+                  <span
+                    class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white dark:border-gray-900"
+                  ></span>
+                </span>
+              }
+            </button>
+
+            @if (isNotificationOpen) {
+              <div
+                class="absolute right-0 mt-3 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden"
+              >
+                <div
+                  class="p-4 border-b border-gray-100 dark:border-gray-800 font-bold text-sm text-gray-800 dark:text-gray-200"
+                >
+                  Zaproszenia
+                </div>
+                <div class="max-h-80 overflow-y-auto">
+                  @for (inv of invitations; track inv.id) {
+                    <div
+                      class="p-4 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    >
+                      <p class="text-sm text-gray-600 dark:text-gray-300">
+                        <span
+                          class="font-bold text-gray-900 dark:text-gray-100"
+                          >{{ inv.invitedBy?.email || "Użytkownik" }}</span
+                        >
+                        zaprasza Cię do dołączenia do
+                        <span class="font-bold text-indigo-500">{{
+                          inv.workspace?.name
+                        }}</span>
+                      </p>
+                      <div class="mt-3 flex gap-2">
+                        <button
+                          (click)="acceptInv(inv.id)"
+                          class="px-3 py-1.5 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition-colors"
+                        >
+                          Zaakceptuj
+                        </button>
+                        <button
+                          (click)="isNotificationOpen = false"
+                          class="px-3 py-1.5 text-gray-500 dark:text-gray-400 text-xs font-bold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        >
+                          Później
+                        </button>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div
+                      class="p-8 text-center text-gray-500 dark:text-gray-400 text-sm flex flex-col items-center"
+                    >
+                      <svg
+                        class="w-10 h-10 mb-2 opacity-50"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                        ></path>
+                      </svg>
+                      Brak nowych zaproszeń
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <button
+            (click)="themeService.toggleTheme()"
+            title="Zmień motyw"
+            class="text-gray-400 dark:text-gray-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors flex items-center"
+          >
+            @if (themeService.isDarkMode()) {
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                ></path>
+              </svg>
+            } @else {
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                ></path>
+              </svg>
+            }
+          </button>
+          <button
+            (click)="logout()"
+            title="Wyloguj się"
+            class="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              ></path>
+            </svg>
+          </button>
+          <div
+            class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border-2 border-white dark:border-gray-800 shadow-sm"
+          ></div>
+        </div>
+      </header>
+
+      @if (!activeChannel) {
+        <div class="flex-1 overflow-y-auto p-6 md:p-8">
+          @if (activeWorkspace) {
+            <div class="mb-8">
+              <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">
+                Witaj w {{ activeWorkspace.name }} 👋
+              </h1>
+              <p class="mt-2 text-gray-600 dark:text-gray-400">
+                Oto co się dzisiaj dzieje w Twojej przestrzeni roboczej.
+              </p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div
+                class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm cursor-pointer"
+              >
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                  Naprawić logowanie w Angularze
+                </h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Szef zgłosił błąd...
+                </p>
+              </div>
             </div>
           } @else {
-            <form
-              (ngSubmit)="sendMessage()"
-              class="relative flex items-center shadow-sm"
+            <div
+              class="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 text-lg"
             >
-              <input
-                type="text"
-                name="message"
-                [(ngModel)]="newMessageContent"
-                placeholder="Napisz na {{
-                  activeChannel.type === 'INFO' ? '📢' : '#'
-                }}{{ activeChannel.name }}..."
-                class="w-full pl-4 pr-12 py-3.5 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
-                autocomplete="off"
-              />
-              <button
-                type="submit"
-                [disabled]="!newMessageContent.trim()"
-                class="absolute right-2 p-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 shadow-md"
+              <p>Utwórz nową przestrzeń roboczą, aby rozpocząć pracę.</p>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex flex-col flex-1 h-full overflow-hidden">
+          <div
+            class="h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-6 shrink-0 bg-white dark:bg-gray-900 transition-colors shadow-sm z-10"
+          >
+            <h2
+              class="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center"
+            >
+              <span class="text-gray-400 dark:text-gray-500 mr-2">{{
+                activeChannel.type === "INFO" ? "📢" : "#"
+              }}</span>
+              {{ activeChannel.name }}
+            </h2>
+          </div>
+
+          <div
+            class="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-gray-950"
+          >
+            @for (msg of messages; track msg.id) {
+              <div class="flex group">
+                <div
+                  class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold shrink-0 shadow-sm"
+                >
+                  {{ getInitials(msg.user?.email || "U") }}
+                </div>
+                <div class="ml-4 flex-1">
+                  <div class="flex items-baseline">
+                    <span
+                      class="font-bold text-gray-900 dark:text-gray-100 mr-2"
+                      >{{
+                        msg.user?.name ||
+                          msg.user?.email ||
+                          "Nieznany Użytkownik"
+                      }}</span
+                    >
+                    <span
+                      class="text-xs text-gray-500 dark:text-gray-400 font-medium"
+                      >{{ msg.createdAt | date: "short" }}</span
+                    >
+                  </div>
+                  <p
+                    class="text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap leading-relaxed"
+                  >
+                    {{ msg.content }}
+                  </p>
+                </div>
+              </div>
+            } @empty {
+              <div
+                class="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500"
+              >
+                <span class="text-4xl mb-4">💬</span>
+                <p class="font-medium text-lg">
+                  Brak wiadomości. Bądź pierwszy!
+                </p>
+              </div>
+            }
+          </div>
+
+          <div
+            class="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shrink-0"
+          >
+            @if (
+              activeChannel.type === "INFO" && currentUserRole === "MEMBER"
+            ) {
+              <div
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-center text-sm text-gray-500 dark:text-gray-400 font-bold flex items-center justify-center gap-2"
               >
                 <svg
                   class="w-5 h-5"
@@ -445,311 +510,347 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                   ></path>
                 </svg>
-              </button>
-            </form>
-          }
+                Tylko właściciel lub administrator może pisać na tym kanale.
+              </div>
+            } @else {
+              <form
+                (ngSubmit)="sendMessage()"
+                class="relative flex items-center shadow-sm"
+              >
+                <input
+                  type="text"
+                  name="message"
+                  [(ngModel)]="newMessageContent"
+                  placeholder="Napisz na {{
+                    activeChannel.type === 'INFO' ? '📢' : '#'
+                  }}{{ activeChannel.name }}..."
+                  class="w-full pl-4 pr-12 py-3.5 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
+                  autocomplete="off"
+                />
+                <button
+                  type="submit"
+                  [disabled]="!newMessageContent.trim()"
+                  class="absolute right-2 p-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 shadow-md"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    ></path>
+                  </svg>
+                </button>
+              </form>
+            }
+          </div>
+        </div>
+      }
+    </main>
+
+    @if (isCreateModalOpen) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
+      >
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border dark:border-gray-800"
+        >
+          <div
+            class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center"
+          >
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+              Stwórz swój serwer
+            </h3>
+            <button
+              (click)="closeCreateModal()"
+              class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          <div class="px-6 py-6 text-center">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">
+              Twój serwer to miejsce, w którym spotykasz się ze swoim zespołem.
+              Nadaj mu nazwę.
+            </p>
+            <div class="text-left">
+              <label
+                class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
+                >Nazwa przestrzeni roboczej</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="newWorkspaceName"
+                (keyup.enter)="submitNewWorkspace()"
+                placeholder="np. Zespół IT Stafflou"
+                class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-lg focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
+              />
+            </div>
+          </div>
+          <div
+            class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between"
+          >
+            <button
+              (click)="closeCreateModal()"
+              class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            >
+              Wróć
+            </button>
+            <button
+              (click)="submitNewWorkspace()"
+              [disabled]="isCreating || !newWorkspaceName.trim()"
+              class="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              @if (isCreating) {
+                <svg
+                  class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Tworzenie...
+              } @else {
+                Stwórz
+              }
+            </button>
+          </div>
         </div>
       </div>
     }
-  </main>
 
-  @if (isCreateModalOpen) {
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
-    >
+    @if (isChannelModalOpen) {
       <div
-        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border dark:border-gray-800"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
       >
         <div
-          class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center"
+          class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border dark:border-gray-800"
         >
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            Stwórz swój serwer
-          </h3>
-          <button
-            (click)="closeCreateModal()"
-            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          <div
+            class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center"
           >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+              Utwórz kanał
+            </h3>
+            <button
+              (click)="isChannelModalOpen = false; newChannelName = ''"
+              class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <div class="px-6 py-6 text-center">
-          <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">
-            Twój serwer to miejsce, w którym spotykasz się ze swoim zespołem.
-            Nadaj mu nazwę.
-          </p>
-          <div class="text-left">
-            <label
-              class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
-              >Nazwa przestrzeni roboczej</label
-            >
-            <input
-              type="text"
-              [(ngModel)]="newWorkspaceName"
-              (keyup.enter)="submitNewWorkspace()"
-              placeholder="np. Zespół IT Stafflou"
-              class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-lg focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
-            />
-          </div>
-        </div>
-        <div
-          class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between"
-        >
-          <button
-            (click)="closeCreateModal()"
-            class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-          >
-            Wróć
-          </button>
-          <button
-            (click)="submitNewWorkspace()"
-            [disabled]="isCreating || !newWorkspaceName.trim()"
-            class="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            @if (isCreating) {
               <svg
-                class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                class="w-6 h-6"
                 fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
                 <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
                 ></path>
               </svg>
-              Tworzenie...
-            } @else {
-              Stwórz
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  @if (isChannelModalOpen) {
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
-    >
-      <div
-        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border dark:border-gray-800"
-      >
-        <div
-          class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center"
-        >
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            Utwórz kanał
-          </h3>
-          <button
-            (click)="isChannelModalOpen = false; newChannelName = ''"
-            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <div class="px-6 py-6 space-y-5 text-left">
-          <div>
-            <label
-              class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-3"
-              >Typ kanału</label
-            >
-            <div class="flex gap-6">
-              <label class="flex items-center cursor-pointer group">
-                <input
-                  type="radio"
-                  name="channelType"
-                  value="TEXT"
-                  [(ngModel)]="newChannelType"
-                  class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-                <span
-                  class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
-                  ># Tekstowy</span
-                >
-              </label>
-              <label class="flex items-center cursor-pointer group">
-                <input
-                  type="radio"
-                  name="channelType"
-                  value="INFO"
-                  [(ngModel)]="newChannelType"
-                  class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-                <span
-                  class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
-                  >📢 Informacyjny</span
-                >
-              </label>
+            </button>
+          </div>
+          <div class="px-6 py-6 space-y-5 text-left">
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-3"
+                >Typ kanału</label
+              >
+              <div class="flex gap-6">
+                <label class="flex items-center cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="channelType"
+                    value="TEXT"
+                    [(ngModel)]="newChannelType"
+                    class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <span
+                    class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                    ># Tekstowy</span
+                  >
+                </label>
+                <label class="flex items-center cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="channelType"
+                    value="INFO"
+                    [(ngModel)]="newChannelType"
+                    class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <span
+                    class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                    >📢 Informacyjny</span
+                  >
+                </label>
+              </div>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
+                >Nazwa kanału</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="newChannelName"
+                (keyup.enter)="submitNewChannel()"
+                placeholder="np. ogłoszenia"
+                class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-lg focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
+              />
             </div>
           </div>
-          <div>
-            <label
-              class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
-              >Nazwa kanału</label
+          <div
+            class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between"
+          >
+            <button
+              (click)="isChannelModalOpen = false; newChannelName = ''"
+              class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
             >
-            <input
-              type="text"
-              [(ngModel)]="newChannelName"
-              (keyup.enter)="submitNewChannel()"
-              placeholder="np. ogłoszenia"
-              class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-lg focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
-            />
+              Wróć
+            </button>
+            <button
+              (click)="submitNewChannel()"
+              [disabled]="!newChannelName.trim() || !activeWorkspace"
+              class="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              Utwórz kanał
+            </button>
           </div>
         </div>
-        <div
-          class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between"
-        >
-          <button
-            (click)="isChannelModalOpen = false; newChannelName = ''"
-            class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-          >
-            Wróć
-          </button>
-          <button
-            (click)="submitNewChannel()"
-            [disabled]="!newChannelName.trim() || !activeWorkspace"
-            class="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            Utwórz kanał
-          </button>
-        </div>
       </div>
-    </div>
-  }
+    }
 
-  @if (isInviteModalOpen) {
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
-    >
+    @if (isInviteModalOpen) {
       <div
-        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border dark:border-gray-800"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
       >
         <div
-          class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center"
+          class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border dark:border-gray-800"
         >
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            Zaproś do zespołu
-          </h3>
-          <button
-            (click)="closeInviteModal()"
-            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          <div
+            class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center"
           >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+              Zaproś do zespołu
+            </h3>
+            <button
+              (click)="closeInviteModal()"
+              class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </button>
-        </div>
-
-        <div class="px-6 py-6 space-y-5 text-left">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Wpisz adres e-mail osoby, którą chcesz zaprosić do przestrzeni
-            <span class="font-bold text-indigo-500">{{
-              activeWorkspace?.name
-            }}</span
-            >.
-          </p>
-          <div>
-            <label
-              class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
-              >Adres E-mail</label
-            >
-            <input
-              type="email"
-              [(ngModel)]="inviteEmail"
-              (keyup.enter)="submitInvite()"
-              placeholder="np. jan.kowalski@firma.pl"
-              class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-lg focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
-            />
-          </div>
-        </div>
-
-        <div
-          class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between"
-        >
-          <button
-            (click)="closeInviteModal()"
-            class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-          >
-            Wróć
-          </button>
-          <button
-            (click)="submitInvite()"
-            [disabled]="isInviting || !inviteEmail.trim()"
-            class="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            @if (isInviting) {
               <svg
-                class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                class="w-6 h-6"
                 fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
                 <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
                 ></path>
               </svg>
-              Wysyłanie...
-            } @else {
-              Wyślij zaproszenie
-            }
-          </button>
+            </button>
+          </div>
+
+          <div class="px-6 py-6 space-y-5 text-left">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Wpisz adres e-mail osoby, którą chcesz zaprosić do przestrzeni
+              <span class="font-bold text-indigo-500">{{
+                activeWorkspace?.name
+              }}</span
+              >.
+            </p>
+            <div>
+              <label
+                class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2"
+                >Adres E-mail</label
+              >
+              <input
+                type="email"
+                [(ngModel)]="inviteEmail"
+                (keyup.enter)="submitInvite()"
+                placeholder="np. jan.kowalski@firma.pl"
+                class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-lg focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
+              />
+            </div>
+          </div>
+
+          <div
+            class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between"
+          >
+            <button
+              (click)="closeInviteModal()"
+              class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            >
+              Wróć
+            </button>
+            <button
+              (click)="submitInvite()"
+              [disabled]="isInviting || !inviteEmail.trim()"
+              class="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              @if (isInviting) {
+                <svg
+                  class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Wysyłanie...
+              } @else {
+                Wyślij zaproszenie
+              }
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  }
-</div>
+    }
+  </div>
+}

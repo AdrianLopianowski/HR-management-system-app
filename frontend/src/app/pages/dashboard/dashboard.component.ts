@@ -40,9 +40,24 @@ export class DashboardComponent implements OnInit {
   inviteEmail = '';
   isInviting = false;
 
+  myProfile: any = null;
+  showOnboarding = false;
+  onboardingData = {
+    firstName: '',
+    lastName: '',
+    location: '',
+  };
+
   ngOnInit() {
     onAuthStateChanged(this.auth, async (user) => {
       if (user) {
+        await this.loadMyProfile();
+
+        if (!this.myProfile?.firstName) {
+          this.showOnboarding = true;
+          return;
+        }
+
         await this.loadWorkspaces();
         await this.loadInvitations();
       }
@@ -215,5 +230,31 @@ export class DashboardComponent implements OnInit {
 
   getInitials(name: string): string {
     return name ? name.charAt(0).toUpperCase() : '?';
+  }
+  async loadMyProfile() {
+    try {
+      this.myProfile = await this.workspaceService.getMyProfile();
+    } catch (error) {
+      console.error('Błąd pobierania profilu:', error);
+    }
+  }
+
+  async submitOnboarding() {
+    if (!this.onboardingData.firstName || !this.onboardingData.lastName) {
+      alert('Imię i nazwisko są wymagane!');
+      return;
+    }
+
+    try {
+      await this.workspaceService.updateMyProfile(this.onboardingData);
+
+      this.showOnboarding = false;
+
+      await this.loadWorkspaces();
+      await this.loadInvitations();
+    } catch (error) {
+      console.error('Błąd zapisu profilu:', error);
+      alert('Nie udało się zapisać danych.');
+    }
   }
 }

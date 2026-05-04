@@ -6,22 +6,20 @@ export class AuthService {
   constructor(private prisma: PrismaService) {}
 
   async syncUser(firebaseUser: any) {
-    let user = await this.prisma.user.findUnique({
-      where: { id: firebaseUser.uid },
+    const user = await this.prisma.user.upsert({
+      where: {
+        email: firebaseUser.email,
+      },
+      update: {
+        id: firebaseUser.uid,
+      },
+      create: {
+        id: firebaseUser.uid,
+        email: firebaseUser.email,
+      },
     });
 
-    if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          id: firebaseUser.uid,
-          email: firebaseUser.email,
-          name: firebaseUser.name || 'Nowy Użytkownik',
-        },
-      });
-      console.log('🎉 Utworzono nowego użytkownika w bazie:', user.email);
-    } else {
-      console.log('👍 Użytkownik już istnieje:', user.email);
-    }
+    console.log('✅ Zsynchronizowano użytkownika w bazie:', user.email);
 
     return user;
   }

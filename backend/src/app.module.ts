@@ -3,9 +3,16 @@ import { AuthModule } from './auth/firebase-auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 import { InvitationsModule } from './invitations/invitations.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, WorkspacesModule, InvitationsModule],
+  imports: [
+    AuthModule,
+    PrismaModule,
+    WorkspacesModule,
+    InvitationsModule,
+    UsersModule,
+  ],
   controllers: [],
   providers: [],
 })
