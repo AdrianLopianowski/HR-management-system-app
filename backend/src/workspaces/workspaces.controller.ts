@@ -62,6 +62,39 @@ export class WorkspacesController {
     return this.workspacesService.remove(id);
   }
 
+  @Get(':id/members')
+  getMembers(@Param('id') id: string) {
+    return this.workspacesService.getMembers(id);
+  }
+
+  @Patch(':id/members/:userId/role')
+  updateMemberRole(
+    @Param('id') workspaceId: string,
+    @Param('userId') userId: string,
+    @Body('role') role: 'OWNER' | 'ADMIN' | 'MEMBER',
+    @Req() req: any,
+  ) {
+    return this.workspacesService.updateMemberRole(
+      workspaceId,
+      userId,
+      role,
+      req.user.uid,
+    );
+  }
+
+  @Delete(':id/members/:userId')
+  removeMember(
+    @Param('id') workspaceId: string,
+    @Param('userId') userId: string,
+    @Req() req: any,
+  ) {
+    return this.workspacesService.removeMember(
+      workspaceId,
+      userId,
+      req.user.uid,
+    );
+  }
+
   @Get(':id/channels')
   findAllChannels(@Param('id') id: string) {
     return this.workspacesService.getChannels(id);

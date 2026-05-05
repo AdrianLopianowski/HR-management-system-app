@@ -101,6 +101,37 @@ export class WorkspaceService {
     );
   }
 
+  async getMembers(workspaceId: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.get(`${this.apiUrl}/${workspaceId}/members`, { headers }),
+    );
+  }
+
+  async updateMemberRole(
+    workspaceId: string,
+    userId: string,
+    role: 'OWNER' | 'ADMIN' | 'MEMBER',
+  ) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.patch(
+        `${this.apiUrl}/${workspaceId}/members/${userId}/role`,
+        { role },
+        { headers },
+      ),
+    );
+  }
+
+  async removeMember(workspaceId: string, userId: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.delete(`${this.apiUrl}/${workspaceId}/members/${userId}`, {
+        headers,
+      }),
+    );
+  }
+
   async inviteUser(workspaceId: string, email: string) {
     const headers = await this.getHeaders();
     return firstValueFrom(

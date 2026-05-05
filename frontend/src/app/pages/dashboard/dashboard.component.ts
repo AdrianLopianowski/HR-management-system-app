@@ -13,7 +13,7 @@ import { ThemeService } from '../../services/theme.service';
   styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit {
-  private auth = inject(Auth);
+  public auth = inject(Auth);
   private router = inject(Router);
   private workspaceService = inject(WorkspaceService);
   public themeService = inject(ThemeService);
@@ -48,6 +48,17 @@ export class DashboardComponent implements OnInit {
     location: '',
   };
 
+  isProfileDropdownOpen = false;
+  isSettingsModalOpen = false;
+  settingsData = { firstName: '', lastName: '', location: '' };
+  isSavingSettings = false;
+
+  members: any[] = [];
+  selectedMember: any = null;
+  isMemberModalOpen = false;
+  isUpdatingRole = false;
+  isRemovingMember = false;
+
   ngOnInit() {
     onAuthStateChanged(this.auth, async (user) => {
       if (user) {
@@ -72,7 +83,10 @@ export class DashboardComponent implements OnInit {
 
       if (this.workspaces.length > 0 && !this.activeWorkspace) {
         this.activeWorkspace = this.workspaces[0];
-        await this.loadChannels(this.activeWorkspace.id);
+        await Promise.all([
+          this.loadChannels(this.activeWorkspace.id),
+          this.loadMembers(this.activeWorkspace.id),
+        ]);
       }
     } catch (error) {
       console.error('Błąd pobierania przestrzeni:', error);
@@ -152,7 +166,120 @@ export class DashboardComponent implements OnInit {
   async selectWorkspace(workspace: any) {
     this.activeWorkspace = workspace;
     this.activeChannel = null;
-    await this.loadChannels(workspace.id);
+    await Promise.all([
+      this.loadChannels(workspace.id),
+      this.loadMembers(workspace.id),
+    ]);
+  }
+
+  async loadMembers(workspaceId: string) {
+    try {
+      this.members = (await this.workspaceService.getMembers(
+        workspaceId,
+      )) as any[];
+    } catch (e) {
+      console.error('Błąd pobierania członków', e);
+    }
+  }
+
+  openMemberModal(member: any) {
+    this.selectedMember = member;
+    this.isMemberModalOpen = true;
+  }
+
+  canManageMember(member: any): boolean {
+    const myRole = this.currentUserRole;
+    if (myRole === 'OWNER') return member.userId !== this.auth.currentUser?.uid;
+    if (myRole === 'ADMIN') return member.role === 'MEMBER';
+    return false;
+  }
+
+  canRemoveMember(member: any): boolean {
+    const myRole = this.currentUserRole;
+    if (myRole === 'OWNER') return member.userId !== this.auth.currentUser?.uid;
+    if (myRole === 'ADMIN') return member.role === 'MEMBER';
+    return false;
+  }
+
+  availableRoles(member: any): string[] {
+    if (this.currentUserRole === 'OWNER') return ['MEMBER', 'ADMIN', 'OWNER'];
+    if (this.currentUserRole === 'ADMIN') return ['MEMBER', 'ADMIN'];
+    return [];
+  }
+
+  async updateRole(newRole: 'OWNER' | 'ADMIN' | 'MEMBER') {
+    if (!this.activeWorkspace || !this.selectedMember) return;
+    this.isUpdatingRole = true;
+    try {
+      await this.workspaceService.updateMemberRole(
+        this.activeWorkspace.id,
+        this.selectedMember.userId,
+        newRole,
+      );
+      await this.loadMembers(this.activeWorkspace.id);
+      await this.loadWorkspaces();
+      this.isMemberModalOpen = false;
+    } catch (e: any) {
+      alert(e?.error?.message || 'Nie udało się zmienić roli.');
+    } finally {
+      this.isUpdatingRole = false;
+    }
+  }
+
+  async removeMember() {
+    if (!this.activeWorkspace || !this.selectedMember) return;
+    const name =
+      this.selectedMember.user?.displayName || this.selectedMember.user?.email;
+    if (!confirm(`Czy na pewno chcesz usunąć ${name} z zespołu?`)) return;
+    this.isRemovingMember = true;
+    try {
+      await this.workspaceService.removeMember(
+        this.activeWorkspace.id,
+        this.selectedMember.userId,
+      );
+      await this.loadMembers(this.activeWorkspace.id);
+      await this.loadWorkspaces();
+      this.isMemberModalOpen = false;
+    } catch (e: any) {
+      alert(e?.error?.message || 'Nie udało się usunąć członka.');
+    } finally {
+      this.isRemovingMember = false;
+    }
+  }
+
+  roleLabel(role: string): string {
+    return (
+      { OWNER: 'Właściciel', ADMIN: 'Admin', MEMBER: 'Członek' }[role] ?? role
+    );
+  }
+
+  roleBadgeClass(role: string): string {
+    return (
+      {
+        OWNER:
+          'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+        ADMIN:
+          'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+        MEMBER: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+      }[role] ?? ''
+    );
+  }
+
+  memberGroups(): { role: string; members: any[] }[] {
+    return ['OWNER', 'ADMIN', 'MEMBER'].map((role) => ({
+      role,
+      members: this.members.filter((m) => m.role === role),
+    }));
+  }
+
+  getMemberInitials(member: any): string {
+    const first = member.user?.firstName?.[0] || '';
+    const last = member.user?.lastName?.[0] || '';
+    return (
+      (first + last).toUpperCase() ||
+      member.user?.email?.[0]?.toUpperCase() ||
+      '?'
+    );
   }
 
   async loadChannels(workspaceId: string) {
@@ -237,6 +364,37 @@ export class DashboardComponent implements OnInit {
     } catch (error) {
       console.error('Błąd pobierania profilu:', error);
     }
+  }
+
+  openSettings() {
+    this.settingsData = {
+      firstName: this.myProfile?.firstName || '',
+      lastName: this.myProfile?.lastName || '',
+      location: this.myProfile?.location || '',
+    };
+    this.isProfileDropdownOpen = false;
+    this.isSettingsModalOpen = true;
+  }
+
+  async submitSettings() {
+    if (!this.settingsData.firstName || !this.settingsData.lastName) return;
+    this.isSavingSettings = true;
+    try {
+      await this.workspaceService.updateMyProfile(this.settingsData);
+      this.myProfile = { ...this.myProfile, ...this.settingsData };
+      this.isSettingsModalOpen = false;
+    } catch (error) {
+      console.error('Błąd zapisu ustawień:', error);
+      alert('Nie udało się zapisać danych.');
+    } finally {
+      this.isSavingSettings = false;
+    }
+  }
+
+  getProfileInitials(): string {
+    const first = this.myProfile?.firstName?.[0] || '';
+    const last = this.myProfile?.lastName?.[0] || '';
+    return (first + last).toUpperCase() || '?';
   }
 
   async submitOnboarding() {
