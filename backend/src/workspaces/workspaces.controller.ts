@@ -8,7 +8,12 @@ import {
   Delete,
   UseGuards,
   Req,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { WorkspacesService } from './workspaces.service';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
@@ -22,12 +27,17 @@ export class WorkspacesController {
   @Post()
   create(@Req() req: any, @Body() createWorkspaceDto: CreateWorkspaceDto) {
     createWorkspaceDto.userId = req.user.uid;
-
-    console.log('--- 1. TWORZENIE NOWEJ PRZESTRZENI ---');
-    console.log('Twórca (Firebase UID):', req.user.uid);
-    console.log('Dane przestrzeni:', createWorkspaceDto);
-
     return this.workspacesService.create(createWorkspaceDto);
+  }
+
+  @Get('notifications/deleted')
+  getDeleteNotifications(@Req() req: any) {
+    return this.workspacesService.getDeleteNotifications(req.user.uid);
+  }
+
+  @Patch('notifications/deleted/read')
+  markNotificationsRead(@Req() req: any) {
+    return this.workspacesService.markNotificationsRead(req.user.uid);
   }
 
   @Get('test-create/:userId')
@@ -106,12 +116,6 @@ export class WorkspacesController {
     @Body() body: { name: string; type: 'TEXT' | 'INFO' },
     @Req() req: any,
   ) {
-    console.log('--- 2. TWORZENIE KANAŁU ---');
-    console.log('ID Przestrzeni roboczej:', id);
-    console.log('Nazwa kanału:', body.name);
-    console.log('Typ kanału:', body.type);
-    console.log('ID użytkownika (Firebase UID):', req.user.uid);
-
     return this.workspacesService.createChannel(
       id,
       body.name,
@@ -119,6 +123,7 @@ export class WorkspacesController {
       req.user.uid,
     );
   }
+
   @Get(':id/channels/:channelId/messages')
   getMessages(@Param('channelId') channelId: string) {
     return this.workspacesService.getMessages(channelId);
@@ -136,6 +141,117 @@ export class WorkspacesController {
       channelId,
       req.user.uid,
       content,
+    );
+  }
+
+  @Post(':id/channels/:channelId/messages/upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (_req: any, file: any, cb: any) => {
+          const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, unique + extname(file.originalname));
+        },
+      }),
+      limits: { fileSize: 50 * 1024 * 1024 },
+    }),
+  )
+  uploadFile(
+    @Param('id') workspaceId: string,
+    @Param('channelId') channelId: string,
+    @UploadedFile() file: any,
+    @Body('content') content: string,
+    @Req() req: any,
+  ) {
+    const fileUrl = `/uploads/${file.filename}`;
+    const mime = file.mimetype;
+    const fileType = mime.startsWith('image/')
+      ? 'image'
+      : mime.startsWith('video/')
+        ? 'video'
+        : 'document';
+
+    return this.workspacesService.sendFileMessage(
+      workspaceId,
+      channelId,
+      req.user.uid,
+      fileUrl,
+      file.originalname,
+      fileType,
+      content || undefined,
+    );
+  }
+
+  @Delete(':id/channels/:channelId/messages/:messageId')
+  deleteMessage(
+    @Param('id') workspaceId: string,
+    @Param('messageId') messageId: string,
+    @Req() req: any,
+  ) {
+    return this.workspacesService.deleteMessage(
+      workspaceId,
+      messageId,
+      req.user.uid,
+    );
+  }
+
+  @Get(':id/roles')
+  getWorkspaceRoles(@Param('id') id: string) {
+    return this.workspacesService.getWorkspaceRoles(id);
+  }
+
+  @Post(':id/roles')
+  createWorkspaceRole(
+    @Param('id') id: string,
+    @Body() body: { name: string; color: string },
+    @Req() req: any,
+  ) {
+    return this.workspacesService.createWorkspaceRole(
+      id,
+      body.name,
+      body.color,
+      req.user.uid,
+    );
+  }
+
+  @Patch(':id/roles/:roleId')
+  updateWorkspaceRole(
+    @Param('id') id: string,
+    @Param('roleId') roleId: string,
+    @Body() body: { name: string; color: string },
+    @Req() req: any,
+  ) {
+    return this.workspacesService.updateWorkspaceRole(
+      id,
+      roleId,
+      body.name,
+      body.color,
+      req.user.uid,
+    );
+  }
+
+  @Delete(':id/roles/:roleId')
+  deleteWorkspaceRole(
+    @Param('id') id: string,
+    @Param('roleId') roleId: string,
+    @Req() req: any,
+  ) {
+    return this.workspacesService.deleteWorkspaceRole(id, roleId, req.user.uid);
+  }
+
+  @Patch(':id/members/:userId/custom-role')
+  assignCustomRole(
+    @Param('id') workspaceId: string,
+    @Param('userId') userId: string,
+    @Body('customRoleId') customRoleId: string,
+    @Req() req: any,
+  ) {
+    return this.workspacesService.assignCustomRole(
+      workspaceId,
+      userId,
+      customRoleId || null,
+      req.user.uid,
     );
   }
 }

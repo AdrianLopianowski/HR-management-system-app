@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Auth, signOut, onAuthStateChanged } from '@angular/fire/auth';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { WorkspaceService } from '../../services/workspace.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -17,6 +18,7 @@ export class DashboardComponent implements OnInit {
   private router = inject(Router);
   private workspaceService = inject(WorkspaceService);
   public themeService = inject(ThemeService);
+  private sanitizer = inject(DomSanitizer);
   workspaces: any[] = [];
   activeWorkspace: any = null;
   activeChannel: any = null;
@@ -59,6 +61,21 @@ export class DashboardComponent implements OnInit {
   isUpdatingRole = false;
   isRemovingMember = false;
 
+  deleteNotifications: any[] = [];
+  selectedFile: File | null = null;
+  isUploadingFile = false;
+
+  workspaceRoles: any[] = [];
+  isRolesModalOpen = false;
+  newRoleName = '';
+  newRoleColor = '#6366f1';
+  isCreatingRole = false;
+
+  mentionDropdownOpen = false;
+  mentionSearch = '';
+  mentionCandidates: any[] = [];
+  mentionStartIndex = -1;
+
   ngOnInit() {
     onAuthStateChanged(this.auth, async (user) => {
       if (user) {
@@ -70,7 +87,10 @@ export class DashboardComponent implements OnInit {
         }
 
         await this.loadWorkspaces();
-        await this.loadInvitations();
+        await Promise.all([
+          this.loadInvitations(),
+          this.loadDeleteNotifications(),
+        ]);
       }
     });
   }
@@ -86,6 +106,7 @@ export class DashboardComponent implements OnInit {
         await Promise.all([
           this.loadChannels(this.activeWorkspace.id),
           this.loadMembers(this.activeWorkspace.id),
+          this.loadWorkspaceRoles(this.activeWorkspace.id),
         ]);
       }
     } catch (error) {
@@ -169,6 +190,7 @@ export class DashboardComponent implements OnInit {
     await Promise.all([
       this.loadChannels(workspace.id),
       this.loadMembers(workspace.id),
+      this.loadWorkspaceRoles(workspace.id),
     ]);
   }
 
@@ -405,14 +427,256 @@ export class DashboardComponent implements OnInit {
 
     try {
       await this.workspaceService.updateMyProfile(this.onboardingData);
-
       this.showOnboarding = false;
-
       await this.loadWorkspaces();
-      await this.loadInvitations();
+      await Promise.all([
+        this.loadInvitations(),
+        this.loadDeleteNotifications(),
+      ]);
     } catch (error) {
       console.error('Błąd zapisu profilu:', error);
       alert('Nie udało się zapisać danych.');
     }
+  }
+
+  async loadDeleteNotifications() {
+    try {
+      const data: any = await this.workspaceService.getDeleteNotifications();
+      this.deleteNotifications = data || [];
+    } catch (e) {
+      console.error('Błąd pobierania powiadomień o usunięciu:', e);
+    }
+  }
+
+  async deleteMessage(msg: any) {
+    if (!this.activeWorkspace || !this.activeChannel) return;
+    if (!confirm('Czy na pewno chcesz usunąć tę wiadomość?')) return;
+    try {
+      await this.workspaceService.deleteMessage(
+        this.activeWorkspace.id,
+        this.activeChannel.id,
+        msg.id,
+      );
+      await this.loadMessages();
+    } catch (e: any) {
+      alert(e?.error?.message || 'Nie udało się usunąć wiadomości.');
+    }
+  }
+
+  canDeleteMessage(msg: any): boolean {
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return false;
+    if (msg.userId === uid) return true;
+    return ['OWNER', 'ADMIN'].includes(this.currentUserRole);
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.selectedFile = input.files[0];
+      this.uploadSelectedFile();
+      input.value = '';
+    }
+  }
+
+  async uploadSelectedFile() {
+    if (!this.selectedFile || !this.activeWorkspace || !this.activeChannel)
+      return;
+    this.isUploadingFile = true;
+    try {
+      await this.workspaceService.uploadFile(
+        this.activeWorkspace.id,
+        this.activeChannel.id,
+        this.selectedFile,
+      );
+      this.selectedFile = null;
+      await this.loadMessages();
+    } catch (e) {
+      console.error('Błąd uploadu pliku:', e);
+      alert('Nie udało się przesłać pliku.');
+    } finally {
+      this.isUploadingFile = false;
+    }
+  }
+
+  getFileUrl(url: string): string {
+    return `http://localhost:3000${url}`;
+  }
+
+  async dismissDeleteNotifications() {
+    try {
+      await this.workspaceService.markDeleteNotificationsRead();
+      this.deleteNotifications = [];
+    } catch (e) {
+      console.error('Błąd oznaczania powiadomień jako przeczytane:', e);
+    }
+  }
+
+  async loadWorkspaceRoles(workspaceId: string) {
+    try {
+      this.workspaceRoles = (await this.workspaceService.getWorkspaceRoles(
+        workspaceId,
+      )) as any[];
+    } catch (e) {
+      console.error('Błąd pobierania ról:', e);
+    }
+  }
+
+  async createWorkspaceRole() {
+    if (!this.newRoleName.trim() || !this.activeWorkspace) return;
+    this.isCreatingRole = true;
+    try {
+      await this.workspaceService.createWorkspaceRole(
+        this.activeWorkspace.id,
+        this.newRoleName.trim(),
+        this.newRoleColor,
+      );
+      await this.loadWorkspaceRoles(this.activeWorkspace.id);
+      this.newRoleName = '';
+      this.newRoleColor = '#6366f1';
+    } catch (e: any) {
+      alert(e?.error?.message || 'Nie udało się utworzyć roli.');
+    } finally {
+      this.isCreatingRole = false;
+    }
+  }
+
+  async deleteWorkspaceRole(roleId: string) {
+    if (!this.activeWorkspace) return;
+    if (
+      !confirm(
+        'Czy na pewno chcesz usunąć tę rolę? Zostanie odebrana wszystkim członkom.',
+      )
+    )
+      return;
+    try {
+      await this.workspaceService.deleteWorkspaceRole(
+        this.activeWorkspace.id,
+        roleId,
+      );
+      await this.loadWorkspaceRoles(this.activeWorkspace.id);
+      await this.loadMembers(this.activeWorkspace.id);
+    } catch (e: any) {
+      alert(e?.error?.message || 'Nie udało się usunąć roli.');
+    }
+  }
+
+  async assignCustomRole(customRoleId: string | null) {
+    if (!this.activeWorkspace || !this.selectedMember) return;
+    try {
+      await this.workspaceService.assignCustomRole(
+        this.activeWorkspace.id,
+        this.selectedMember.userId,
+        customRoleId,
+      );
+      await this.loadMembers(this.activeWorkspace.id);
+      this.isMemberModalOpen = false;
+    } catch (e: any) {
+      alert(e?.error?.message || 'Nie udało się przypisać roli.');
+    }
+  }
+
+  onMessageInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    const cursor = input.selectionStart ?? value.length;
+    const textBefore = value.substring(0, cursor);
+    const lastAt = textBefore.lastIndexOf('@');
+
+    if (lastAt !== -1) {
+      const query = textBefore.substring(lastAt + 1);
+      if (!query.includes(' ')) {
+        this.mentionSearch = query;
+        this.mentionStartIndex = lastAt;
+        this.mentionCandidates = this.getMentionCandidates(query);
+        this.mentionDropdownOpen = this.mentionCandidates.length > 0;
+        return;
+      }
+    }
+    this.mentionDropdownOpen = false;
+  }
+
+  getMentionCandidates(query: string): any[] {
+    const q = query.toLowerCase();
+    const allOption = { id: '__all__' };
+    const filtered = this.members.filter((m) => {
+      const name = `${m.user?.firstName || ''} ${m.user?.lastName || ''}`
+        .toLowerCase()
+        .trim();
+      const email = (m.user?.email || '').toLowerCase();
+      return !q || name.includes(q) || email.includes(q);
+    });
+    if (!q || 'wszyscy'.includes(q) || 'all'.includes(q)) {
+      return [allOption, ...filtered];
+    }
+    return filtered;
+  }
+
+  selectMention(candidate: any) {
+    const mentionName =
+      candidate.id === '__all__'
+        ? 'all'
+        : `${candidate.user?.firstName || ''} ${candidate.user?.lastName || ''}`.trim();
+    const before = this.newMessageContent.substring(0, this.mentionStartIndex);
+    const after = this.newMessageContent.substring(
+      this.mentionStartIndex + this.mentionSearch.length + 1,
+    );
+    this.newMessageContent = `${before}@${mentionName} ${after}`;
+    this.mentionDropdownOpen = false;
+  }
+
+  onMessageBlur() {
+    setTimeout(() => {
+      this.mentionDropdownOpen = false;
+    }, 150);
+  }
+
+  countMembersByRole(customRoleId: string): string {
+    const count = this.members.filter(
+      (m) => m.customRoleId === customRoleId,
+    ).length;
+    return count > 0 ? `${count} os.` : '';
+  }
+
+  renderContent(content: string | null | undefined): SafeHtml {
+    if (!content) return this.sanitizer.bypassSecurityTrustHtml('');
+    const escapedHtml = content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
+
+    const names = [
+      'all',
+      ...this.members
+        .map((m) =>
+          `${m.user?.firstName || ''} ${m.user?.lastName || ''}`.trim(),
+        )
+        .filter(Boolean),
+    ].sort((a, b) => b.length - a.length);
+
+    const mentionPatterns = names.map((n) =>
+      n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    );
+    const pattern = new RegExp(
+      `@(${mentionPatterns.join('|')})(?=[\\s,.:!?;"']|$|<)`,
+      'gi',
+    );
+
+    const highlighted = escapedHtml.replace(
+      pattern,
+      '<span class="text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-900/30 rounded px-0.5">@$1</span>',
+    );
+    return this.sanitizer.bypassSecurityTrustHtml(highlighted);
+  }
+
+  isMentionedInMessage(content: string | null | undefined): boolean {
+    if (!content || !this.myProfile) return false;
+    const myName =
+      `${this.myProfile.firstName || ''} ${this.myProfile.lastName || ''}`
+        .trim()
+        .toLowerCase();
+    const lower = content.toLowerCase();
+    return lower.includes('@all') || (!!myName && lower.includes(`@${myName}`));
   }
 }

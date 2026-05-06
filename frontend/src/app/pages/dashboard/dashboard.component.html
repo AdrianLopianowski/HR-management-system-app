@@ -265,7 +265,7 @@
                   d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                 ></path>
               </svg>
-              @if (invitations.length > 0) {
+              @if (invitations.length > 0 || deleteNotifications.length > 0) {
                 <span class="absolute -top-1 -right-1 flex h-3 w-3">
                   <span
                     class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
@@ -287,6 +287,37 @@
                   Zaproszenia
                 </div>
                 <div class="max-h-80 overflow-y-auto">
+                  @for (notif of deleteNotifications; track notif.id) {
+                    <div
+                      class="p-4 border-b border-gray-50 dark:border-gray-800 bg-red-50 dark:bg-red-900/10"
+                    >
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        <div class="flex-1">
+                          <p class="text-sm text-gray-700 dark:text-gray-300">
+                            <span class="font-bold text-red-600 dark:text-red-400">{{ notif.deletedByRole === 'OWNER' ? 'Właściciel' : 'Administrator' }}</span>
+                            usunął Twoją wiadomość z kanału
+                            <span class="font-bold text-gray-900 dark:text-gray-100">#{{ notif.channelName }}</span>
+                          </p>
+                          @if (notif.messagePreview) {
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 italic truncate">"{{ notif.messagePreview }}"</p>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  @if (deleteNotifications.length > 0) {
+                    <div class="p-3 border-b border-gray-100 dark:border-gray-800 flex justify-end">
+                      <button
+                        (click)="dismissDeleteNotifications()"
+                        class="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium"
+                      >
+                        Oznacz jako przeczytane
+                      </button>
+                    </div>
+                  }
                   @for (inv of invitations; track inv.id) {
                     <div
                       class="p-4 border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
@@ -317,24 +348,26 @@
                       </div>
                     </div>
                   } @empty {
-                    <div
-                      class="p-8 text-center text-gray-500 dark:text-gray-400 text-sm flex flex-col items-center"
-                    >
-                      <svg
-                        class="w-10 h-10 mb-2 opacity-50"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    @if (deleteNotifications.length === 0) {
+                      <div
+                        class="p-8 text-center text-gray-500 dark:text-gray-400 text-sm flex flex-col items-center"
                       >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                        ></path>
-                      </svg>
-                      Brak nowych zaproszeń
-                    </div>
+                        <svg
+                          class="w-10 h-10 mb-2 opacity-50"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                          ></path>
+                        </svg>
+                        Brak nowych powiadomień
+                      </div>
+                    }
                   }
                 </div>
               </div>
@@ -479,33 +512,67 @@
             class="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-gray-950"
           >
             @for (msg of messages; track msg.id) {
-              <div class="flex group">
+              <div class="flex group relative rounded-xl transition-colors"
+                   [ngClass]="{'ring-1 ring-amber-300 dark:ring-amber-700/60 bg-amber-50 dark:bg-amber-900/10': isMentionedInMessage(msg.content)}">
                 <div
                   class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold shrink-0 shadow-sm"
                 >
                   {{ getInitials(msg.user?.email || "U") }}
                 </div>
                 <div class="ml-4 flex-1">
-                  <div class="flex items-baseline">
-                    <span
-                      class="font-bold text-gray-900 dark:text-gray-100 mr-2"
-                      >{{
-                        msg.user?.name ||
-                          msg.user?.email ||
-                          "Nieznany Użytkownik"
-                      }}</span
-                    >
-                    <span
-                      class="text-xs text-gray-500 dark:text-gray-400 font-medium"
-                      >{{ msg.createdAt | date: "short" }}</span
-                    >
+                  <div class="flex items-baseline gap-2">
+                    <span class="font-bold text-gray-900 dark:text-gray-100">{{
+                      msg.user?.name || msg.user?.email || "Nieznany Użytkownik"
+                    }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{
+                      msg.createdAt | date: "short"
+                    }}</span>
                   </div>
-                  <p
-                    class="text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap leading-relaxed"
-                  >
-                    {{ msg.content }}
-                  </p>
+                  @if (msg.content) {
+                    <p class="text-gray-700 dark:text-gray-300 mt-1 leading-relaxed"
+                       [innerHTML]="renderContent(msg.content)">
+                    </p>
+                  }
+                  @if (msg.fileType === "image") {
+                    <a [href]="getFileUrl(msg.fileUrl)" target="_blank" class="block mt-2">
+                      <img
+                        [src]="getFileUrl(msg.fileUrl)"
+                        [alt]="msg.fileName"
+                        class="max-w-xs max-h-64 rounded-xl border border-gray-200 dark:border-gray-700 object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                      />
+                    </a>
+                  }
+                  @if (msg.fileType === "video") {
+                    <video
+                      [src]="getFileUrl(msg.fileUrl)"
+                      controls
+                      class="mt-2 max-w-sm rounded-xl border border-gray-200 dark:border-gray-700"
+                    ></video>
+                  }
+                  @if (msg.fileType === "document") {
+                    <a
+                      [href]="getFileUrl(msg.fileUrl)"
+                      target="_blank"
+                      class="mt-2 inline-flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 font-medium transition-colors"
+                    >
+                      <svg class="w-4 h-4 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      {{ msg.fileName }}
+                    </a>
+                  }
                 </div>
+                @if (canDeleteMessage(msg)) {
+                  <button
+                    (click)="deleteMessage(msg)"
+                    class="absolute top-0 right-0 p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                    title="Usuń wiadomość"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                }
               </div>
             } @empty {
               <div
@@ -520,7 +587,7 @@
           </div>
 
           <div
-            class="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shrink-0"
+            class="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shrink-0 relative"
           >
             @if (
               activeChannel.type === "INFO" && currentUserRole === "MEMBER"
@@ -544,18 +611,82 @@
                 Tylko właściciel lub administrator może pisać na tym kanale.
               </div>
             } @else {
+              @if (mentionDropdownOpen) {
+                <div class="absolute bottom-full left-4 right-4 mb-1 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden max-h-52 overflow-y-auto">
+                  @for (candidate of mentionCandidates; track candidate.id || candidate.userId) {
+                    <button
+                      type="button"
+                      (mousedown)="selectMention(candidate)"
+                      class="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors text-left"
+                    >
+                      @if (candidate.id === '__all__') {
+                        <div class="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm shrink-0">&#64;</div>
+                        <div>
+                          <p class="text-sm font-bold text-indigo-600 dark:text-indigo-400">Wszyscy</p>
+                          <p class="text-xs text-gray-400 dark:text-gray-500">Powiadom wszystkich</p>
+                        </div>
+                      } @else {
+                        <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300 shrink-0">
+                          {{ getMemberInitials(candidate) }}
+                        </div>
+                        <div class="min-w-0">
+                          <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                            {{ candidate.user?.firstName }} {{ candidate.user?.lastName }}
+                          </p>
+                          @if (candidate.customRole) {
+                            <p class="text-xs flex items-center gap-1">
+                              <span class="w-1.5 h-1.5 rounded-full shrink-0" [style.background-color]="candidate.customRole.color"></span>
+                              <span class="text-gray-400 dark:text-gray-500">{{ candidate.customRole.name }}</span>
+                            </p>
+                          } @else {
+                            <p class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ candidate.user?.email }}</p>
+                          }
+                        </div>
+                      }
+                    </button>
+                  }
+                </div>
+              }
               <form
                 (ngSubmit)="sendMessage()"
-                class="relative flex items-center shadow-sm"
+                class="relative flex items-center shadow-sm gap-2"
               >
+                <input
+                  type="file"
+                  #fileInput
+                  class="hidden"
+                  (change)="onFileSelected($event)"
+                  accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+                />
+                <button
+                  type="button"
+                  (click)="fileInput.click()"
+                  [disabled]="isUploadingFile"
+                  title="Załącz plik"
+                  class="shrink-0 p-2.5 text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 bg-gray-100 dark:bg-gray-800 rounded-xl transition-colors disabled:opacity-50"
+                >
+                  @if (isUploadingFile) {
+                    <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                  } @else {
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                    </svg>
+                  }
+                </button>
+                <label for="fileInput" class="sr-only">Załącz plik</label>
                 <input
                   type="text"
                   name="message"
                   [(ngModel)]="newMessageContent"
+                  (input)="onMessageInput($event)"
+                  (blur)="onMessageBlur()"
                   placeholder="Napisz na {{
                     activeChannel.type === 'INFO' ? '📢' : '#'
-                  }}{{ activeChannel.name }}..."
-                  class="w-full pl-4 pr-12 py-3.5 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
+                  }}{{ activeChannel.name }}... (@ aby oznaczyć)"
+                  class="flex-1 pl-4 pr-12 py-3.5 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 outline-none transition-all text-gray-800 dark:text-white font-medium"
                   autocomplete="off"
                 />
                 <button
@@ -563,18 +694,8 @@
                   [disabled]="!newMessageContent.trim()"
                   class="absolute right-2 p-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 shadow-md"
                 >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    ></path>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                   </svg>
                 </button>
               </form>
@@ -592,7 +713,21 @@
           class="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800 font-bold text-sm text-gray-800 dark:text-gray-200"
         >
           Członkowie
-          <span class="ml-auto text-xs font-normal text-gray-400 dark:text-gray-500">{{ members.length }}</span>
+          <span class="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">{{ members.length }}</span>
+          @if (currentUserRole === 'OWNER' || currentUserRole === 'ADMIN') {
+            <button
+              (click)="isRolesModalOpen = true"
+              title="Zarządzaj rolami zespołowymi"
+              class="ml-auto text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </button>
+          } @else {
+            <span class="ml-auto"></span>
+          }
         </div>
         <div class="flex-1 overflow-y-auto py-3 px-2 space-y-4">
           @for (group of memberGroups(); track group.role) {
@@ -625,7 +760,14 @@
                             ? member.user.firstName + ' ' + member.user.lastName
                             : member.user?.email || 'Użytkownik' }}
                         </p>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ member.user?.email }}</p>
+                        @if (member.customRole) {
+                          <p class="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full shrink-0" [style.background-color]="member.customRole.color"></span>
+                            {{ member.customRole.name }}
+                          </p>
+                        } @else {
+                          <p class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ member.user?.email }}</p>
+                        }
                       </div>
                     </div>
                   }
@@ -699,6 +841,37 @@
                 }
               </div>
             </div>
+            @if (workspaceRoles.length > 0 && (currentUserRole === 'OWNER' || currentUserRole === 'ADMIN')) {
+              <div>
+                <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                  Rola zespołowa
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    (click)="assignCustomRole(null)"
+                    class="px-3 py-1.5 text-sm font-bold rounded-lg border transition-all"
+                    [ngClass]="{
+                      'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600': !selectedMember.customRoleId,
+                      'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-gray-400': selectedMember.customRoleId
+                    }"
+                  >Brak</button>
+                  @for (wr of workspaceRoles; track wr.id) {
+                    <button
+                      (click)="assignCustomRole(wr.id)"
+                      class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold rounded-lg border transition-all"
+                      [ngClass]="{
+                        'border-2 text-gray-800 dark:text-gray-100': selectedMember.customRoleId === wr.id,
+                        'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-indigo-400': selectedMember.customRoleId !== wr.id
+                      }"
+                      [style.border-color]="selectedMember.customRoleId === wr.id ? wr.color : ''"
+                    >
+                      <span class="w-2 h-2 rounded-full shrink-0" [style.background-color]="wr.color"></span>
+                      {{ wr.name }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
           </div>
           <div
             class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center"
@@ -995,6 +1168,100 @@
               class="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-sm shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               Utwórz kanał
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (isRolesModalOpen) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border dark:border-gray-800">
+          <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Role zespołowe</h3>
+            <button
+              (click)="isRolesModalOpen = false"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="px-6 py-5 space-y-4">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Twórz własne podgrupy członków jak <span class="font-semibold text-gray-700 dark:text-gray-300">Lead, Developer, Designer</span> itp.
+              Role zespołowe nie wpływają na uprawnienia — służą do organizacji.
+            </p>
+
+            <div class="space-y-2 max-h-52 overflow-y-auto">
+              @for (wr of workspaceRoles; track wr.id) {
+                <div class="flex items-center gap-3 px-3 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <span class="w-4 h-4 rounded-full shrink-0 border-2 border-white dark:border-gray-700 shadow-sm" [style.background-color]="wr.color"></span>
+                  <span class="flex-1 text-sm font-semibold text-gray-800 dark:text-gray-200">{{ wr.name }}</span>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">
+                    {{ countMembersByRole(wr.id) }}
+                  </span>
+                  <button
+                    (click)="deleteWorkspaceRole(wr.id)"
+                    class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                    title="Usuń rolę"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </div>
+              } @empty {
+                <div class="text-center py-4 text-sm text-gray-400 dark:text-gray-500">
+                  Brak ról. Utwórz pierwszą poniżej.
+                </div>
+              }
+            </div>
+
+            <div class="border-t border-gray-100 dark:border-gray-800 pt-4">
+              <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-3">Nowa rola</label>
+              <div class="flex gap-2">
+                <input
+                  type="color"
+                  [(ngModel)]="newRoleColor"
+                  name="roleColor"
+                  class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer shrink-0 p-0.5 bg-white dark:bg-gray-800"
+                  title="Wybierz kolor roli"
+                />
+                <input
+                  type="text"
+                  [(ngModel)]="newRoleName"
+                  name="roleName"
+                  (keyup.enter)="createWorkspaceRole()"
+                  placeholder="np. Developer, Lead, Designer..."
+                  class="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 border border-transparent dark:border-gray-700 rounded-xl focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 outline-none transition-all text-gray-800 dark:text-white font-medium text-sm"
+                />
+                <button
+                  (click)="createWorkspaceRole()"
+                  [disabled]="isCreatingRole || !newRoleName.trim()"
+                  class="px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-50 shrink-0"
+                >
+                  @if (isCreatingRole) {
+                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                  } @else {
+                    Dodaj
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+            <button
+              (click)="isRolesModalOpen = false"
+              class="px-4 py-2 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            >
+              Zamknij
             </button>
           </div>
         </div>

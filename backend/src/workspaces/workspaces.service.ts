@@ -6,6 +6,8 @@ import {
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class WorkspacesService {
@@ -117,9 +119,10 @@ export class WorkspacesService {
   }
 
   async getMembers(workspaceId: string) {
-    const members = await this.prisma.workspaceMember.findMany({
+    const prismaAny = this.prisma as any;
+    const members = await prismaAny.workspaceMember.findMany({
       where: { workspaceId },
-      include: { user: true },
+      include: { user: true, customRole: true },
       orderBy: { joinedAt: 'asc' },
     });
     return members.map((m: any) => ({
@@ -251,5 +254,206 @@ export class WorkspacesService {
             : newMessage.user?.name || newMessage.user?.email || 'Nieznany',
       },
     };
+  }
+
+  async sendFileMessage(
+    workspaceId: string,
+    channelId: string,
+    userId: string,
+    fileUrl: string,
+    fileName: string,
+    fileType: string,
+    content?: string,
+  ) {
+    const member = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId },
+    });
+    if (!member) throw new ForbiddenException('Brak dostępu do tej przestrzeni');
+
+    const channel = await this.prisma.channel.findUnique({
+      where: { id: channelId },
+    });
+    if (channel?.type === 'INFO' && member.role === 'MEMBER') {
+      throw new ForbiddenException(
+        'Tylko Właściciel lub Admin może pisać na kanale informacyjnym.',
+      );
+    }
+
+    const prismaAny = this.prisma as any;
+    const newMessage: any = await prismaAny.message.create({
+      data: {
+        content: content || undefined,
+        fileUrl,
+        fileName,
+        fileType,
+        channelId,
+        userId,
+      },
+      include: { user: true },
+    });
+
+    return {
+      ...newMessage,
+      user: {
+        ...newMessage.user,
+        name:
+          newMessage.user?.firstName && newMessage.user?.lastName
+            ? `${newMessage.user.firstName} ${newMessage.user.lastName}`
+            : newMessage.user?.name || newMessage.user?.email || 'Nieznany',
+      },
+    };
+  }
+
+  async deleteMessage(
+    workspaceId: string,
+    messageId: string,
+    requesterId: string,
+  ) {
+    const prismaAny = this.prisma as any;
+
+    const requester = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId: requesterId },
+    });
+    if (!requester) throw new ForbiddenException('Brak dostępu');
+
+    const message: any = await prismaAny.message.findUnique({
+      where: { id: messageId },
+      include: { user: true, channel: true },
+    });
+    if (!message) throw new NotFoundException('Wiadomość nie istnieje');
+
+    const isOwn = message.userId === requesterId;
+    const isAdminOrOwner = ['OWNER', 'ADMIN'].includes(requester.role);
+
+    if (!isOwn && !isAdminOrOwner) {
+      throw new ForbiddenException('Brak uprawnień do usunięcia tej wiadomości');
+    }
+
+    if (!isOwn && isAdminOrOwner) {
+      await prismaAny.deleteNotification.create({
+        data: {
+          userId: message.userId,
+          workspaceId,
+          channelName: message.channel.name,
+          messagePreview:
+            message.content?.substring(0, 100) || message.fileName || '',
+          deletedByRole: requester.role,
+        },
+      });
+    }
+
+    if (message.fileUrl) {
+      const filename = path.basename(message.fileUrl as string);
+      const filePath = path.join(process.cwd(), 'uploads', filename);
+      try {
+        fs.unlinkSync(filePath);
+      } catch {}
+    }
+
+    await this.prisma.message.delete({ where: { id: messageId } });
+    return { success: true };
+  }
+
+  async getDeleteNotifications(userId: string) {
+    const prismaAny = this.prisma as any;
+    return prismaAny.deleteNotification.findMany({
+      where: { userId, isRead: false },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async markNotificationsRead(userId: string) {
+    const prismaAny = this.prisma as any;
+    await prismaAny.deleteNotification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true },
+    });
+    return { success: true };
+  }
+
+  async getWorkspaceRoles(workspaceId: string) {
+    const prismaAny = this.prisma as any;
+    return prismaAny.workspaceRole.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async createWorkspaceRole(
+    workspaceId: string,
+    name: string,
+    color: string,
+    requesterId: string,
+  ) {
+    const requester = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId: requesterId },
+    });
+    if (!requester || !['OWNER', 'ADMIN'].includes(requester.role)) {
+      throw new ForbiddenException('Brak uprawnień do zarządzania rolami');
+    }
+    const prismaAny = this.prisma as any;
+    return prismaAny.workspaceRole.create({
+      data: { workspaceId, name, color },
+    });
+  }
+
+  async updateWorkspaceRole(
+    workspaceId: string,
+    roleId: string,
+    name: string,
+    color: string,
+    requesterId: string,
+  ) {
+    const requester = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId: requesterId },
+    });
+    if (!requester || !['OWNER', 'ADMIN'].includes(requester.role)) {
+      throw new ForbiddenException('Brak uprawnień do zarządzania rolami');
+    }
+    const prismaAny = this.prisma as any;
+    return prismaAny.workspaceRole.update({
+      where: { id: roleId },
+      data: { name, color },
+    });
+  }
+
+  async deleteWorkspaceRole(
+    workspaceId: string,
+    roleId: string,
+    requesterId: string,
+  ) {
+    const requester = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId: requesterId },
+    });
+    if (!requester || !['OWNER', 'ADMIN'].includes(requester.role)) {
+      throw new ForbiddenException('Brak uprawnień do zarządzania rolami');
+    }
+    const prismaAny = this.prisma as any;
+    return prismaAny.workspaceRole.delete({ where: { id: roleId } });
+  }
+
+  async assignCustomRole(
+    workspaceId: string,
+    targetUserId: string,
+    customRoleId: string | null,
+    requesterId: string,
+  ) {
+    const requester = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId: requesterId },
+    });
+    if (!requester || !['OWNER', 'ADMIN'].includes(requester.role)) {
+      throw new ForbiddenException('Brak uprawnień');
+    }
+    const target = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId, userId: targetUserId },
+    });
+    if (!target) throw new NotFoundException('Użytkownik nie jest członkiem');
+
+    const prismaAny = this.prisma as any;
+    return prismaAny.workspaceMember.update({
+      where: { id: target.id },
+      data: { customRoleId: customRoleId ?? null },
+      include: { user: true, customRole: true },
+    });
   }
 }

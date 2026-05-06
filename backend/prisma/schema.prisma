@@ -42,6 +42,7 @@ model User {
 
   messages  Message[]
   sentInvitations Invitation[] @relation("Inviter")
+  deleteNotifications DeleteNotification[]
 }
 
 model Workspace {
@@ -54,19 +55,33 @@ model Workspace {
   members    WorkspaceMember[]
   invitations Invitation[]
   channels   Channel[]
+  roles      WorkspaceRole[]
 }
 
 model WorkspaceMember {
-  id          String   @id @default(uuid())
-  userId      String
-  workspaceId String
-  role        Role     @default(MEMBER)
-  joinedAt    DateTime @default(now())
+  id           String   @id @default(uuid())
+  userId       String
+  workspaceId  String
+  role         Role     @default(MEMBER)
+  customRoleId String?
+  joinedAt     DateTime @default(now())
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace    Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customRole   WorkspaceRole? @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
 
   @@unique([userId, workspaceId])
+}
+
+model WorkspaceRole {
+  id          String   @id @default(uuid())
+  workspaceId String
+  name        String
+  color       String   @default("#6366f1")
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members     WorkspaceMember[]
 }
 
 enum Role {
@@ -76,7 +91,10 @@ enum Role {
 }
 model Message {
   id        String   @id @default(uuid())
-  content   String
+  content   String?
+  fileUrl   String?
+  fileName  String?
+  fileType  String?
   createdAt DateTime @default(now())
 
   channelId String
@@ -84,6 +102,19 @@ model Message {
 
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DeleteNotification {
+  id             String   @id @default(uuid())
+  userId         String
+  workspaceId    String
+  channelName    String
+  messagePreview String?
+  deletedByRole  String
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 model Invitation {
   id          String   @id @default(uuid())

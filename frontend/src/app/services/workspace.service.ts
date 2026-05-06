@@ -83,6 +83,57 @@ export class WorkspaceService {
       ),
     );
   }
+
+  async uploadFile(
+    workspaceId: string,
+    channelId: string,
+    file: File,
+    content?: string,
+  ) {
+    const headers = await this.getHeaders();
+    const formData = new FormData();
+    formData.append('file', file);
+    if (content) formData.append('content', content);
+    return firstValueFrom(
+      this.http.post(
+        `${this.apiUrl}/${workspaceId}/channels/${channelId}/messages/upload`,
+        formData,
+        { headers },
+      ),
+    );
+  }
+
+  async deleteMessage(
+    workspaceId: string,
+    channelId: string,
+    messageId: string,
+  ) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.delete(
+        `${this.apiUrl}/${workspaceId}/channels/${channelId}/messages/${messageId}`,
+        { headers },
+      ),
+    );
+  }
+
+  async getDeleteNotifications() {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.get(`${this.apiUrl}/notifications/deleted`, { headers }),
+    );
+  }
+
+  async markDeleteNotificationsRead() {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.patch(
+        `${this.apiUrl}/notifications/deleted/read`,
+        {},
+        { headers },
+      ),
+    );
+  }
   async getMyInvitations() {
     const headers = await this.getHeaders();
     return firstValueFrom(
@@ -138,6 +189,64 @@ export class WorkspaceService {
       this.http.post(
         `http://localhost:3000/invitations/invite/${workspaceId}`,
         { email },
+        { headers },
+      ),
+    );
+  }
+
+  async getWorkspaceRoles(workspaceId: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.get(`${this.apiUrl}/${workspaceId}/roles`, { headers }),
+    );
+  }
+
+  async createWorkspaceRole(workspaceId: string, name: string, color: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.post(
+        `${this.apiUrl}/${workspaceId}/roles`,
+        { name, color },
+        { headers },
+      ),
+    );
+  }
+
+  async updateWorkspaceRole(
+    workspaceId: string,
+    roleId: string,
+    name: string,
+    color: string,
+  ) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.patch(
+        `${this.apiUrl}/${workspaceId}/roles/${roleId}`,
+        { name, color },
+        { headers },
+      ),
+    );
+  }
+
+  async deleteWorkspaceRole(workspaceId: string, roleId: string) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.delete(`${this.apiUrl}/${workspaceId}/roles/${roleId}`, {
+        headers,
+      }),
+    );
+  }
+
+  async assignCustomRole(
+    workspaceId: string,
+    userId: string,
+    customRoleId: string | null,
+  ) {
+    const headers = await this.getHeaders();
+    return firstValueFrom(
+      this.http.patch(
+        `${this.apiUrl}/${workspaceId}/members/${userId}/custom-role`,
+        { customRoleId },
         { headers },
       ),
     );
